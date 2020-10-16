@@ -8,5 +8,5 @@
 
 - 不限于 mysql | php | go
 
-[GitHub](https://github.com/docsifyjs/docsify/)
-[Get Started](#docsify)
+[GitHub](https://jianzhuliu.github.io/notes/)
+[Get Started](#notes-01)

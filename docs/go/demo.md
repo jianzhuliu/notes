@@ -1,21 +1,6 @@
 # demo 
 
->dsfasdf
-
-# sdfasdf 
-
 > Hello World
 
+[hello_world.go](/_media/hello_world.go ':include :type=code :fragment=hello_world')
 
-<pre data-lang="go">
-<code class="lang-go">
-package main 
-
-import "fmt"
-
-func main(){
-	fmt.Println("Hello World!!!")
-}
-
-</code>
-</pre>
