@@ -1,31 +1,15 @@
 # demo 
 
-> Hello World
+> Hello World [更多](/go/demo)
 
 [hello_world](/_media/hello_world.go ':include :type=code :fragment=hello_world')
 
-## js 
+# 原理相关 
 
-> example
+## 调度器 GMP 原理与调度全分析
 
-[example](/_media/example.js ':include :type=code :fragment=demo')
+> [前往](/go/theory/gmp)
+
+![logo](/_media/all.jpeg)
 
 
-
-# 操作系统
-
-<!-- tabs:start -->
-
-#### ** English **
-
-Hello!
-
-#### ** French **
-
-Bonjour!
-
-#### ** Italian **
-
-Ciao!
-
-<!-- tabs:end -->
