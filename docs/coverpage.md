@@ -9,4 +9,4 @@
 - 不限于 mysql | php | go
 
 [GitHub](https://jianzhuliu.github.io/notes/)
-[Get Started](#notes-01)
+[Get Started](#main)

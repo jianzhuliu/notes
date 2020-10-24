@@ -30,6 +30,12 @@ docsify init ./docs
 
 ```bash
 docsify serve docs
+
+###浏览器自动打开
+docsify serve docs -o 
+
+###指定端口
+docsify serve docs -o -p3001
 ```
 
 ## 手动初始化

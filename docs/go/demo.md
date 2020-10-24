@@ -1,7 +1,3 @@
-# go专题 
-
-> [前往](/go/) 
-
 # demo 
 
 > Hello World

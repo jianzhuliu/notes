@@ -12,19 +12,21 @@
   <div id="app">加载中</div>
   <script>
     window.$docsify = {
-		subMaxLevel: 3,
 		//loadSidebar: true,	//左侧边栏 _sidebar.md
+		//loadNavbar: true,	//加载导航菜单 _navbar.md
+		//coverpage: true,  //封面 load _coverpage.md
 		
-		loadNavbar: true,	//加载导航菜单 _navbar.md
-		coverpage: true,  //封面 load _coverpage.md
-		
-		//name:'',
 		name: '<span>首页</span>', //文档标题，会显示在侧边栏顶部
-		
 		repo: 'jianzhuliu/notes',	//配置仓库地址
 		auto2top: true, //切换页面后是否自动跳转到页面顶部
-		//logo: '_media/icon.svg',
-		search: false, // 默认值
+		
+		coverpage  : 'coverpage.md',
+		loadNavbar : 'navbar.md',
+		loadSidebar: 'sidebar.md',
+		//homepage   : 'README.md',
+		//auto2top   : true,
+		maxLevel   : 3, 
+		subMaxLevel: 3,
 		
 		copyCode: {
 			buttonText : '复制',
@@ -51,7 +53,6 @@
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/emoji.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
-  <!--script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script-->
   
   <script src="//cdn.jsdelivr.net/npm/prismjs/components/prism-bash.min.js"></script>
 <script src="//cdn.jsdelivr.net/npm/prismjs/components/prism-php.min.js"></script>
