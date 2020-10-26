@@ -1,4 +1,5 @@
 - [Go专题](/go/)
+- [Defer](/go/defer)
 - [Demo](/go/demo)
 - [原理相关](/go/theory/)
 - [其它文章](/go/tools/)

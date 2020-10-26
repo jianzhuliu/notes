@@ -539,3 +539,6 @@ brew install graphviz
 ![logo](/media/debug/3.png)
 
 这样我们就能比较清晰的看到函数之间的调用关系，方块越大的表示 cpu 的占用越大.
+
+!> 本文来源 [https://learnku.com/articles/42023](https://learnku.com/articles/42023 ':crossorgin :target=_blank') 
+
