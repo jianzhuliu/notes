@@ -2,13 +2,13 @@
 
 > Hello World
 
-[hello_world](/_media/hello_world.go ':include :type=code :fragment=hello_world')
+[hello_world](/media/hello_world.go ':include :type=code :fragment=hello_world')
 
 ## js 
 
 > example
 
-[example](/_media/example.js ':include :type=code :fragment=demo')
+[example](/media/example.js ':include :type=code :fragment=demo')
 
 
 

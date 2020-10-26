@@ -1,6 +1,10 @@
+# go 专题
 
 # 原理相关 
 
-![logo](/_media/all.jpeg)
+![logo](/theory/media/gmp/12.png)
+
+# 其他文章
+
 
 
