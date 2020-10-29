@@ -1,0 +1,4 @@
+- [Go专题](/go/)
+- [设计模式](/go/design_pattern/)
+- 行为模式
+	- [观察者模式(Observer)](/go/design_pattern/observer)

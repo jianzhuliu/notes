@@ -2,4 +2,5 @@
 - [Defer](/go/defer)
 - [Demo](/go/demo)
 - [原理相关](/go/theory/)
+- [设计模式](/go/design_pattern/)
 - [其它文章](/go/tools/)
