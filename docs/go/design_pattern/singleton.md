@@ -15,3 +15,13 @@
 ## 代码实现
 
 [singleton](/media/singleton/singleton.go ':include :type=code')
+
+## 参考代码
+
+### package
+
+[senghoo_singleton](/media/senghoo_design_pattern/03_singleton/singleton.go ':include :type=code')
+
+### test
+
+[senghoo_singleton](/media/senghoo_design_pattern/03_singleton/singleton_test.go ':include :type=code')

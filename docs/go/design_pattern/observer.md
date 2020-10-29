@@ -19,3 +19,14 @@
 ## 代码实现
 
 [observer](/media/observer/observer.go ':include :type=code')
+
+## 参考代码
+
+### package
+
+[senghoo_observer](/media/senghoo_design_pattern/10_observer/observer.go ':include :type=code')
+
+### test
+
+[senghoo_observer](/media/senghoo_design_pattern/10_observer/observer_test.go ':include :type=code')
+
