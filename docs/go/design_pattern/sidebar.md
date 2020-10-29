@@ -1,4 +1,6 @@
 - [Go专题](/go/)
 - [设计模式](/go/design_pattern/)
-- 行为模式
+- 创建型模式
+	- [单例模式(Singleton)](/go/design_pattern/singleton)
+- 行为型模式
 	- [观察者模式(Observer)](/go/design_pattern/observer)
