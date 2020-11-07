@@ -12,8 +12,6 @@ import (
 	"gocache/singleflight"
 	"log"
 	"sync"
-	
-	pb "gocache/gocachepb"
 )
 
 //获取来源数据的接口
@@ -137,28 +135,12 @@ func (g *Group) loadLocally(key string) (ByteView, error) {
 
 //远程节点调用获取数据
 func (g *Group) getFromRemoteNodeGetter(nodeGetter NodeGetter, key string) (ByteView, error) {
-	//使用 protobuf 协议
-	req := &pb.Request{
-		Group:g.name,
-		Key:key,
-	}
-	
-	res := &pb.Response{}
-	err := nodeGetter.Get(req, res)
-	if err != nil {
-		return ByteView{}, err
-	}
-	
-	return NewByteView(res.Value), nil 
-	
-	/*
 	bytes, err := nodeGetter.Get(g.name, key)
 	if err != nil {
 		return ByteView{}, err
 	}
 
 	return NewByteView(bytes), nil
-	//*/
 }
 
 //更新缓存

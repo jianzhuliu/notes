@@ -129,37 +129,33 @@ func NewHttpGetter(baseUrl string) *httpGetter {
 	return &httpGetter{baseUrl: baseUrl}
 }
 
-//func (h *httpGetter) Get(group string, key string) ([]byte, error) {
-
-//使用 protobuf 协议
-func (h *httpGetter) Get(in *pb.Request, out *pb.Response) (error) {
+func (h *httpGetter) Get(group string, key string) ([]byte, error) {
 	//构造 url 格式， /<basePath>/<groupName>/<key>
-	//targetUrl := fmt.Sprintf("%v%v/%v", h.baseUrl, url.QueryEscape(group), url.QueryEscape(key))
-	targetUrl := fmt.Sprintf("%v%v/%v", h.baseUrl, url.QueryEscape(in.GetGroup()), url.QueryEscape(in.GetKey()))
+	targetUrl := fmt.Sprintf("%v%v/%v", h.baseUrl, url.QueryEscape(group), url.QueryEscape(key))
 	log.Println("going to get targetUrl ", targetUrl)
 
 	resp, err := http.Get(targetUrl)
 	if err != nil {
-		return err
+		return nil,err
 	}
 	defer resp.Body.Close()
 
 	//判断状态码
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("server return %d", resp.StatusCode)
+		return nil,fmt.Errorf("server return %d", resp.StatusCode)
 	}
 	
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("read response body %v", err)
+		return nil,fmt.Errorf("read response body %v", err)
 	}
 	
 	//使用 protobuf 协议
+	out := &pb.Response{}
+	
 	if err = proto.Unmarshal(data, out); err != nil {
-		return fmt.Errorf("decoding response body: %v", err)
+		return nil,fmt.Errorf("decoding response body: %v", err)
 	}
 	
-	return nil 
-	
-	//return data, nil
+	return out.Value, nil  
 }
