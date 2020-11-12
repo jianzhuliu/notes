@@ -115,24 +115,6 @@ func (g *Group) load(key string) (value ByteView, err error) {
 	return
 }
 
-func (g *Group) loadLocally(key string) (ByteView, error) {
-	//从 getter 获取数据
-	bytes, err := g.getter.Get(key)
-	if err != nil {
-		return ByteView{}, err
-	}
-
-	//value := ByteView{b: cloneBytes(bytes)}
-	value := NewByteView(cloneBytes(bytes))
-
-	//更新缓存
-	g.updateCache(key, value)
-
-	log.Println("[gocache] loadLocally ", key)
-
-	return value, nil
-}
-
 //远程节点调用获取数据
 func (g *Group) getFromRemoteNodeGetter(nodeGetter NodeGetter, key string) (ByteView, error) {
 	bytes, err := nodeGetter.Get(g.name, key)
@@ -141,6 +123,23 @@ func (g *Group) getFromRemoteNodeGetter(nodeGetter NodeGetter, key string) (Byte
 	}
 
 	return NewByteView(bytes), nil
+}
+
+func (g *Group) loadLocally(key string) (ByteView, error) {
+	//从 getter 获取数据
+	bytes, err := g.getter.Get(key)
+	if err != nil {
+		return ByteView{}, err
+	}
+
+	value := NewByteView(cloneBytes(bytes))
+
+	//更新缓存
+	g.updateCache(key, value)
+
+	log.Println("[gocache] loadLocally ", key)
+
+	return value, nil
 }
 
 //更新缓存

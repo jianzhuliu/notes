@@ -15,14 +15,16 @@ type cache struct {
 	mu         sync.Mutex
 	lru        *lru.Cache
 	cacheBytes int64
-	OnRemoved lru.CallbackFunc             //键被移除时的回调函数
+	OnRemoved  lru.CallbackFunc //键被移除时的回调函数
 }
 
 func NewCache(cacheBytes int64, fn ...lru.CallbackFunc) *cache {
 	var onRemoved lru.CallbackFunc
-	if len(fn) >0 {onRemoved = fn[0]}
-	
-	return &cache{cacheBytes: cacheBytes,OnRemoved:onRemoved}
+	if len(fn) > 0 {
+		onRemoved = fn[0]
+	}
+
+	return &cache{cacheBytes: cacheBytes, OnRemoved: onRemoved}
 }
 
 //添加

@@ -12,9 +12,9 @@ import (
 	"net/url"
 	"strings"
 	"sync"
-	
-	pb "gocache/gocachepb"
+
 	"github.com/golang/protobuf/proto"
+	pb "gocache/gocachepb"
 )
 
 const (
@@ -54,6 +54,7 @@ func (p *HTTPPool) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	p.Log("%s %s", r.Method, path)
 
+	//基本参数校验
 	// /<basePath>/<groupName>/<key>
 	parts := strings.SplitN(path[len(p.basePath):], "/", 2)
 	if len(parts) != 2 {
@@ -61,8 +62,13 @@ func (p *HTTPPool) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groupName := parts[0]
-	key := parts[1]
+	groupName := strings.TrimSpace(parts[0])
+	key := strings.TrimSpace(parts[1])
+
+	if len(groupName) == 0 || len(key) == 0 {
+		http.Error(rw, "group or key should be empty", http.StatusNotFound)
+		return
+	}
 
 	group := GetGroup(groupName)
 	if group == nil {
@@ -83,7 +89,7 @@ func (p *HTTPPool) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
+
 	rw.Header().Set("Content-Type", "application/octet-stream")
 	rw.WriteHeader(http.StatusOK)
 	rw.Write(body)
@@ -136,26 +142,26 @@ func (h *httpGetter) Get(group string, key string) ([]byte, error) {
 
 	resp, err := http.Get(targetUrl)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	//判断状态码
 	if resp.StatusCode != http.StatusOK {
-		return nil,fmt.Errorf("server return %d", resp.StatusCode)
+		return nil, fmt.Errorf("server return %d", resp.StatusCode)
 	}
-	
+
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil,fmt.Errorf("read response body %v", err)
+		return nil, fmt.Errorf("read response body %v", err)
 	}
-	
+
 	//使用 protobuf 协议
 	out := &pb.Response{}
-	
+
 	if err = proto.Unmarshal(data, out); err != nil {
-		return nil,fmt.Errorf("decoding response body: %v", err)
+		return nil, fmt.Errorf("decoding response body: %v", err)
 	}
-	
-	return out.Value, nil  
+
+	return out.Value, nil
 }
