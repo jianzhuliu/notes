@@ -116,6 +116,7 @@ func (server *Server) serveCodec(cc codec.Codec, opt *Option) {
 		req, err := server.readRequest(cc)
 		if err != nil {
 			if req == nil {
+				//读取头部出错，或者查找服务出错，则直接关闭连接
 				break
 			}
 
@@ -136,8 +137,8 @@ type request struct {
 	h            *codec.Header //头部
 	argv, replyv reflect.Value //请求的参数及回复数据
 
-	mtype *methodType
-	svc   *service
+	methodType *methodType
+	service   *service
 }
 
 //读取头部
@@ -163,13 +164,13 @@ func (server *Server) readRequest(cc codec.Codec) (*request, error) {
 
 	req := &request{h: h}
 	//读取body
-	req.svc, req.mtype, err = server.findService(h.ServiceMethod)
+	req.service, req.methodType, err = server.findService(h.ServiceMethod)
 	if err != nil {
 		return nil, err
 	}
 
-	req.argv = req.mtype.newArgv()
-	req.replyv = req.mtype.newReplyv()
+	req.argv = req.methodType.newArgv()
+	req.replyv = req.methodType.newReplyv()
 
 	argvi := req.argv.Interface()
 	if req.argv.Type().Kind() != reflect.Ptr {
@@ -184,7 +185,7 @@ func (server *Server) readRequest(cc codec.Codec) (*request, error) {
 	return req, nil
 }
 
-//请求回包
+//请求回包，加锁，保证回包数据不紊乱
 func (server *Server) sendResponse(cc codec.Codec, h *codec.Header, body interface{}, mu *sync.Mutex) {
 	mu.Lock()
 	defer mu.Unlock()
@@ -197,11 +198,13 @@ func (server *Server) sendResponse(cc codec.Codec, h *codec.Header, body interfa
 //处理请求
 func (server *Server) handleRequest(cc codec.Codec, req *request, mu *sync.Mutex, wg *sync.WaitGroup, timeout time.Duration) {
 	defer wg.Done()
+	
+	//处理了请求，一定会有回包(错误或者正常)
 	called := make(chan struct{})
 	send := make(chan struct{})
 
 	go func() {
-		err := req.svc.call(req.mtype, req.argv, req.replyv)
+		err := req.service.call(req.methodType, req.argv, req.replyv)
 		called <- struct{}{}
 		if err != nil {
 			req.h.Error = err.Error()
@@ -210,7 +213,7 @@ func (server *Server) handleRequest(cc codec.Codec, req *request, mu *sync.Mutex
 			return
 		}
 
-		//log.Printf("handleRequest %s.%s(%v,%v) = %v, NumCalls=%d", req.svc.name, req.mtype.method.Name,req.argv,req.replyv.Type(), req.replyv.Elem().Interface(), req.mtype.NumCalls())
+		//log.Printf("handleRequest %s.%s(%v,%v) = %v, NumCalls=%d", req.service.name, req.methodType.method.Name,req.argv,req.replyv.Type(), req.replyv.Elem().Interface(), req.methodType.NumCalls())
 		server.sendResponse(cc, req.h, req.replyv.Interface(), mu)
 		send <- struct{}{}
 	}()

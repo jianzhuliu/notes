@@ -48,15 +48,15 @@ func (m *methodType) newReplyv() reflect.Value {
 type service struct {
 	name   string                 //映射的结构体的名称
 	typ    reflect.Type           //结构体的类型
-	rcvr   reflect.Value          //结构体的实例本身，调用时作为第0个参数
+	targetObj   reflect.Value          //结构体的实例本身，调用时作为第0个参数
 	method map[string]*methodType //所有符合条件的方法列表
 }
 
-func newService(rcvr interface{}) *service {
+func newService(targetObj interface{}) *service {
 	s := new(service)
-	s.rcvr = reflect.ValueOf(rcvr)
-	s.name = reflect.Indirect(s.rcvr).Type().Name()
-	s.typ = reflect.TypeOf(rcvr)
+	s.targetObj = reflect.ValueOf(targetObj)
+	s.name = reflect.Indirect(s.targetObj).Type().Name()
+	s.typ = reflect.TypeOf(targetObj)
 
 	if !ast.IsExported(s.name) {
 		log.Fatalf("rpc server: %s is not a valid service name", s.name)
@@ -101,7 +101,7 @@ func isExportedOrBuiltinType(typ reflect.Type) bool {
 func (s *service) call(m *methodType, argv, replyv reflect.Value) error {
 	atomic.AddUint64(&m.numCalls, 1)
 	f := m.method.Func
-	returnValues := f.Call([]reflect.Value{s.rcvr, argv, replyv})
+	returnValues := f.Call([]reflect.Value{s.targetObj, argv, replyv})
 	if errInter := returnValues[0].Interface(); errInter != nil {
 		return errInter.(error)
 	}

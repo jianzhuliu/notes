@@ -86,7 +86,4 @@ func main() {
 	addrCh := make(chan string)
 	go call(addrCh)
 	startServer(addrCh)
-
-	for {
-	}
 }

@@ -195,26 +195,9 @@ func parseOpions(opts ...*Option) (*Option, error) {
 	return opt, nil
 }
 
+//添加超时处理
 func Dial(network, address string, opts ...*Option) (client *Client, err error) {
 	return dialTimeout(NewClient, network, address, opts...)
-	/*
-		opt, err := parseOpions(opts...)
-		if err != nil {
-			return nil, err
-		}
-		conn, err := net.Dial(network, address)
-		if err != nil {
-			return nil, err
-		}
-
-		defer func() {
-			if client == nil {
-				_ = conn.Close()
-			}
-		}()
-
-		return NewClient(conn, opt)
-		//*/
 }
 
 type clientResult struct {
