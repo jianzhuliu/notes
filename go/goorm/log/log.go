@@ -17,10 +17,10 @@ var (
 
 //对外暴露方法
 var (
-	Errorf  = errorLog.Printf
-	Errorln = errorLog.Println
-	Infof   = infoLog.Printf
-	Infoln  = infoLog.Println
+	Errorf = errorLog.Printf
+	Error  = errorLog.Println
+	Infof  = infoLog.Printf
+	Info   = infoLog.Println
 )
 
 //定义日志等级

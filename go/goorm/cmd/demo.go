@@ -55,7 +55,7 @@ func init() {
 
 //输出错误并退出
 func exitErr(err error, msg string) {
-	log.Errorln(msg, " --err:", err)
+	log.Error(msg, " --err:", err)
 	os.Exit(2)
 }
 
@@ -66,7 +66,7 @@ func setupDB() (err error) {
 		db_user, db_passwd, db_host, db_port, db_name,
 	)
 
-	log.Infoln(dsn, db_ping_timeout)
+	log.Info(dsn, db_ping_timeout)
 
 	Db, err = sql.Open(db_driver, dsn)
 	if err != nil {
@@ -107,7 +107,7 @@ func main() {
 		exitErr(err, fmt.Sprintf("%s has err happended", op_type))
 	}
 
-	log.Infoln("done", op_type)
+	log.Info("done", op_type)
 }
 
 //显示版本号
@@ -146,7 +146,7 @@ func databases() error {
 		db_map = append(db_map, database)
 	}
 
-	log.Infoln(sql, "=================", len(db_map))
+	log.Info(sql, "=================", len(db_map))
 	fmt.Println(strings.Join(db_map, "\n"))
 	return nil
 }
@@ -184,7 +184,7 @@ func tables() error {
 		tblname_map = append(tblname_map, tblname)
 	}
 
-	log.Infoln(sql, "=================", len(tblname_map))
+	log.Info(sql, "=================", len(tblname_map))
 	fmt.Println(strings.Join(tblname_map, "\n"))
 	return nil
 }
