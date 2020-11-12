@@ -27,7 +27,7 @@ var lruTests = []struct {
 
 func TestAdd(t *testing.T) {
 	//创建一个不限制内存大小，且删除键没有回调函数的对象
-	lru := New(int64(0), nil)
+	lru := New(int64(0))
 
 	//添加
 	for _, kv := range lruTests {
@@ -40,13 +40,13 @@ func TestAdd(t *testing.T) {
 		t.Fatalf("cache add fail")
 	}
 
-	//添加已经存在的
 	lru.Add("newk1", lruValue("valuek1"))
 	//t.Log(lru.Info())
 	if v, ok := lru.Get("newk1"); !ok || string(v.(lruValue)) != "valuek1" {
 		t.Fatalf("cache get newk1 fail")
 	}
 
+	//添加已经存在的
 	lru.Add("newk1", lruValue("newvaluek1"))
 	//t.Log(lru.Info())
 	if v, ok := lru.Get("newk1"); !ok || string(v.(lruValue)) != "newvaluek1" {
@@ -56,7 +56,7 @@ func TestAdd(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	//创建一个不限制内存大小，且删除键没有回调函数的对象
-	lru := New(int64(0), nil)
+	lru := New(int64(0))
 
 	//添加
 	for _, kv := range lruTests {
@@ -84,7 +84,7 @@ func TestRemoveOldest(t *testing.T) {
 	k1, k2, k3 := "key1", "key2", "k3"
 	v1, v2, v3 := "value1", "value2", "v3"
 	maxBytes := len(k1 + v1 + k2 + v2)
-	lru := New(int64(maxBytes), nil)
+	lru := New(int64(maxBytes))
 	lru.Add(k1, lruValue(v1))
 	lru.Add(k2, lruValue(v2))
 	//t.Log(lru.Info())

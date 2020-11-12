@@ -32,8 +32,11 @@ type entry struct {
 
 type CallbackFunc func(string, Value)
 
-//构造函数，初始化
-func New(maxBytes int64, onRemoved CallbackFunc) *Cache {
+//构造函数，初始化,方便操作，使用可选参数
+func New(maxBytes int64, fn ...CallbackFunc) *Cache {
+	var onRemoved CallbackFunc
+	if len(fn) >0 {onRemoved = fn[0]}
+	
 	return &Cache{
 		maxBytes:  maxBytes,
 		OnRemoved: onRemoved,

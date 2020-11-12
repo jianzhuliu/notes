@@ -15,10 +15,14 @@ type cache struct {
 	mu         sync.Mutex
 	lru        *lru.Cache
 	cacheBytes int64
+	OnRemoved lru.CallbackFunc             //键被移除时的回调函数
 }
 
-func NewCache(cacheBytes int64) *cache {
-	return &cache{cacheBytes: cacheBytes}
+func NewCache(cacheBytes int64, fn ...lru.CallbackFunc) *cache {
+	var onRemoved lru.CallbackFunc
+	if len(fn) >0 {onRemoved = fn[0]}
+	
+	return &cache{cacheBytes: cacheBytes,OnRemoved:onRemoved}
 }
 
 //添加
@@ -29,7 +33,7 @@ func (c *cache) add(key string, value ByteView) {
 
 	if c.lru == nil {
 		//延迟初始化 Lazy Initialization
-		c.lru = lru.New(c.cacheBytes, nil)
+		c.lru = lru.New(c.cacheBytes, c.OnRemoved)
 	}
 
 	c.lru.Add(key, value)
