@@ -6,29 +6,29 @@ package session
 import (
 	"database/sql"
 	"goorm/conf"
-	"goorm/log"
 	"goorm/dialect"
+	"goorm/log"
 	"os"
 	"testing"
 )
 
 var (
-	TestDB *sql.DB
-	TestDialect,_ = dialect.GetDialect("mysql")
+	TestDB         *sql.DB
+	TestDialect, _ = dialect.GetDialect("mysql")
 )
 
-type User struct{
-	Id int `goorm:"primary key"`
-	Name string 
+type User struct {
+	Id   int `goorm:"primary key"`
+	Name string
 }
 
 //自定义表名
-func (u *User) TableName() string{
+func (u *User) TableName() string {
 	return "user"
 }
 
 //创建会话
-func TNewSession() *Session{
+func TNewSession() *Session {
 	return New(TestDB, TestDialect)
 }
 

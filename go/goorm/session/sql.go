@@ -5,9 +5,10 @@ package session
 
 import (
 	"database/sql"
+	"goorm/clause"
+	"goorm/dialect"
 	"goorm/log"
 	"goorm/schema"
-	"goorm/dialect"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -17,16 +18,19 @@ type Session struct {
 	db      *sql.DB
 	sql     strings.Builder
 	sqlArgs []interface{}
-	
+
 	//添加对结构体映射数据库后支持
-	table *schema.Schema
+	table   *schema.Schema
 	dialect dialect.Dialect
+
+	//语句构建
+	clause clause.Clause
 }
 
 func New(db *sql.DB, dialect dialect.Dialect) *Session {
 	return &Session{
-		db: db,
-		dialect:dialect,
+		db:      db,
+		dialect: dialect,
 	}
 }
 
@@ -39,6 +43,7 @@ func (s *Session) DB() *sql.DB {
 func (s *Session) Clear() {
 	s.sql.Reset()
 	s.sqlArgs = nil
+	s.clause = clause.Clause{}
 }
 
 //构造 sql及参数

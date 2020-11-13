@@ -11,7 +11,7 @@ var (
 	mu       sync.Mutex
 	logFlags = log.LstdFlags | log.Lshortfile
 	errorLog = log.New(os.Stdout, "[error]", logFlags)
-	infoLog  = log.New(os.Stdout, "[info]", logFlags)
+	infoLog  = log.New(os.Stdout, "[info ]", logFlags)
 	loggers  = []*log.Logger{errorLog, infoLog}
 )
 

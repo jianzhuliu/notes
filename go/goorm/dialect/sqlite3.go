@@ -1,4 +1,4 @@
-package dialect 
+package dialect
 
 import (
 	"fmt"
@@ -11,11 +11,11 @@ type sqlite3 struct{}
 //确保实现了 Dialect 对应接口
 var _ Dialect = (*sqlite3)(nil)
 
-func init(){
+func init() {
 	RegistryDialect("sqlite3", &sqlite3{})
 }
 
-func (s *sqlite3) DataTypeOf(v reflect.Value) string{
+func (s *sqlite3) DataTypeOf(v reflect.Value) string {
 	switch v.Kind() {
 	case reflect.Bool:
 		return "bool"
@@ -38,7 +38,7 @@ func (s *sqlite3) DataTypeOf(v reflect.Value) string{
 	panic(fmt.Sprintf("invalid sql type %s (%s)", v.Type().Name(), v.Kind()))
 }
 
-func (s *sqlite3) TableExistSQL(tblname string) (string,[]interface{}){
+func (s *sqlite3) TableExistSQL(tblname string) (string, []interface{}) {
 	args := []interface{}{tblname}
 	return "SELECT name FROM sqlite_master WHERE type='table' and name = ?", args
 }

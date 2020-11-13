@@ -1,21 +1,21 @@
 package session
 
 import (
-	"goorm/schema"
-	"goorm/log"
-	"reflect"
 	"fmt"
+	"goorm/log"
+	"goorm/schema"
+	"reflect"
 	"strings"
 )
 
-func (s *Session) Model(value interface{}) *Session{
+func (s *Session) Model(value interface{}) *Session {
 	if s.table == nil || reflect.TypeOf(value) != reflect.TypeOf(s.table.Model) {
 		s.table = schema.Parse(value, s.dialect)
 	}
 	return s
 }
 
-func (s *Session) Table() *schema.Schema{
+func (s *Session) Table() *schema.Schema {
 	if s.table == nil {
 		log.Error("Model is not set")
 	}
@@ -28,12 +28,12 @@ func (s *Session) CreateTable() error {
 	if table == nil {
 		return fmt.Errorf("model is not set")
 	}
-	
+
 	var columns []string
-	for _, field := range table.Fields{
+	for _, field := range table.Fields {
 		columns = append(columns, fmt.Sprintf("%s %s %s", field.Name, field.Type, field.Tag))
 	}
-	
+
 	sql := fmt.Sprintf("create table %s (%s)", table.Name, strings.Join(columns, ","))
 	_, err := s.Sql(sql).Exec()
 	return err
@@ -45,14 +45,14 @@ func (s *Session) DropTable() error {
 	if table == nil {
 		return fmt.Errorf("model is not set")
 	}
-	
+
 	sql := fmt.Sprintf("drop table %s", table.Name)
 	_, err := s.Sql(sql).Exec()
 	return err
 }
 
 //判断表是否存在
-func (s *Session) HasTable() bool{
+func (s *Session) HasTable() bool {
 	table := s.Table()
 	if table == nil {
 		return false
@@ -60,15 +60,15 @@ func (s *Session) HasTable() bool{
 	tblname := table.Name
 	sql, args := s.dialect.TableExistSQL(tblname)
 	row := s.Sql(sql, args...).QueryRow()
-	var db_tblname string 
-	if err := row.Scan(&db_tblname);err != nil {
+	var db_tblname string
+	if err := row.Scan(&db_tblname); err != nil {
 		log.Error(err)
 		return false
 	}
-	
+
 	if db_tblname == tblname {
 		return true
 	}
-	
+
 	return false
 }

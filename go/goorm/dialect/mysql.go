@@ -1,4 +1,4 @@
-package dialect 
+package dialect
 
 import (
 	"fmt"
@@ -11,11 +11,11 @@ type mysql struct{}
 //确保实现了 Dialect 对应接口
 var _ Dialect = (*mysql)(nil)
 
-func init(){
+func init() {
 	RegistryDialect("mysql", &mysql{})
 }
 
-func (m *mysql) DataTypeOf(v reflect.Value) string{
+func (m *mysql) DataTypeOf(v reflect.Value) string {
 	switch v.Kind() {
 	case reflect.Bool:
 		return "tinyint(1)"
@@ -38,7 +38,7 @@ func (m *mysql) DataTypeOf(v reflect.Value) string{
 	panic(fmt.Sprintf("invalid sql type %s (%s)", v.Type().Name(), v.Kind()))
 }
 
-func (m *mysql) TableExistSQL(tblname string) (string,[]interface{}){
+func (m *mysql) TableExistSQL(tblname string) (string, []interface{}) {
 	args := []interface{}{tblname}
 	return "SELECT table_name FROM information_schema.tables WHERE table_schema=(select database()) and table_name = ?", args
 }
