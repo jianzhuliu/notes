@@ -1,11 +1,13 @@
 /*
-原生sql语句查询
+与数据库交互
 */
 package session
 
 import (
 	"database/sql"
 	"goorm/log"
+	"goorm/schema"
+	"goorm/dialect"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -15,10 +17,17 @@ type Session struct {
 	db      *sql.DB
 	sql     strings.Builder
 	sqlArgs []interface{}
+	
+	//添加对结构体映射数据库后支持
+	table *schema.Schema
+	dialect dialect.Dialect
 }
 
-func New(db *sql.DB) *Session {
-	return &Session{db: db}
+func New(db *sql.DB, dialect dialect.Dialect) *Session {
+	return &Session{
+		db: db,
+		dialect:dialect,
+	}
 }
 
 //获取db 对象

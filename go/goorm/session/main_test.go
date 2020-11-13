@@ -5,16 +5,32 @@ package session
 
 import (
 	"database/sql"
-	"fmt"
 	"goorm/conf"
 	"goorm/log"
+	"goorm/dialect"
 	"os"
 	"testing"
 )
 
 var (
 	TestDB *sql.DB
+	TestDialect,_ = dialect.GetDialect("mysql")
 )
+
+type User struct{
+	Id int `goorm:"primary key"`
+	Name string 
+}
+
+//自定义表名
+func (u *User) TableName() string{
+	return "user"
+}
+
+//创建会话
+func TNewSession() *Session{
+	return New(TestDB, TestDialect)
+}
 
 func exitErr(err error) {
 	log.Error(err)

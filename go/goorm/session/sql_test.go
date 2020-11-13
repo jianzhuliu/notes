@@ -4,12 +4,8 @@ import (
 	"testing"
 )
 
-func NewSession() *Session {
-	return New(TestDB)
-}
-
 func TestSql(t *testing.T) {
-	s := NewSession()
+	s := TNewSession()
 	_, _ = s.Sql("drop table if exists user").Exec()
 	_, err := s.Sql("create table if not exists user(id int(10) unsigned not null primary key auto_increment,name varchar(30) not null default '')engine=innodb default charset=utf8mb4 ").Exec()
 	if err != nil {
