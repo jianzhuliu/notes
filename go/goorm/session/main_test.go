@@ -6,19 +6,14 @@ package session
 import (
 	"database/sql"
 	"fmt"
+	"goorm/conf"
 	"goorm/log"
 	"os"
 	"testing"
 )
 
 var (
-	TestDB       *sql.DB
-	TestDbDriver string = "mysql"
-	TestDbHost   string = "127.0.0.1"
-	TestDbPort   int    = 3306
-	TestDbUser   string = "root"
-	TestDbPasswd string = ""
-	TestDbName   string = "goorm"
+	TestDB *sql.DB
 )
 
 func exitErr(err error) {
@@ -28,11 +23,9 @@ func exitErr(err error) {
 
 func setUp() {
 	log.Info("setUp ================================")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local",
-		TestDbUser, TestDbPasswd, TestDbHost, TestDbPort, TestDbName)
 
 	var err error
-	TestDB, err = sql.Open(TestDbDriver, dsn)
+	TestDB, err = sql.Open(conf.GetDsnByDriver(conf.DriverMysql))
 	if err != nil {
 		exitErr(err)
 	}
