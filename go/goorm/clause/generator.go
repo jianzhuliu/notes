@@ -18,6 +18,9 @@ func init() {
 	generators[OpTypeLimit] = _limit
 	generators[OpTypeValues] = _values
 
+	generators[OpTypeUpdate] = _update
+	generators[OpTypeDelete] = _delete
+	generators[OpTypeCount] = _count
 }
 
 //insert into table (?,?)
@@ -32,6 +35,30 @@ func _select(values ...interface{}) (string, []interface{}) {
 	tblname := values[0]
 	fields := strings.Join(values[1].([]string), ",")
 	return fmt.Sprintf("select %s from %s", fields, tblname), nil
+}
+
+//update ? set ?=?
+func _update(values ...interface{}) (string, []interface{}) {
+	tblname := values[0]
+	kv := values[1].(map[string]interface{})
+	vargs := make([]interface{}, 0, len(kv))
+	karr := make([]string, 0, len(kv))
+	for k, v := range kv {
+		karr = append(karr, k+"=?")
+		vargs = append(vargs, v)
+	}
+	fields := strings.Join(karr, ",")
+	return fmt.Sprintf("update %s set %s", tblname, fields), vargs
+}
+
+//delete from ?
+func _delete(values ...interface{}) (string, []interface{}) {
+	return fmt.Sprintf("delete from %s", values[0]), nil
+}
+
+//select count(?) from ?
+func _count(values ...interface{}) (string, []interface{}) {
+	return _select(values[0], []string{fmt.Sprintf("count(%s)", values[1])})
 }
 
 //where

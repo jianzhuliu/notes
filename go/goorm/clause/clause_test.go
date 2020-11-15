@@ -63,7 +63,7 @@ func TestClauseBuild(t *testing.T) {
 	}
 }
 
-func TestClauseBuildInsert(t *testing.T) {
+func TestClauseInsert(t *testing.T) {
 	var clause Clause
 	clause.Set(OpTypeInsert, "user", []string{"Id", "Name"})
 
@@ -82,6 +82,62 @@ func TestClauseBuildInsert(t *testing.T) {
 	}
 
 	expectArgs := []interface{}{1, "name1", 2, "name2"}
+	if !reflect.DeepEqual(expectArgs, sqlArgs) {
+		t.Fatalf("expect args %v, but %v got", expectArgs, sqlArgs)
+	}
+}
+
+func TestClauseCount(t *testing.T) {
+	var clause Clause
+	clause.Set(OpTypeCount, "user", "Id")
+	sql, sqlArgs := clause.Build()
+	//t.Log(sql)
+	//t.Log(sqlArgs)
+
+	expectSql := "select count(Id) from user"
+	if sql != expectSql {
+		t.Fatalf("expect sql %s but %s got", expectSql, sql)
+	}
+
+	if len(sqlArgs) != 0 {
+		t.Fatalf("expect args num 0 but %d got (%v)", len(sqlArgs), sqlArgs)
+	}
+}
+
+func TestClauseDelete(t *testing.T) {
+	var clause Clause
+	clause.Set(OpTypeDelete, "user")
+	sql, sqlArgs := clause.Build()
+	//t.Log(sql)
+	//t.Log(sqlArgs)
+
+	expectSql := "delete from user"
+	if sql != expectSql {
+		t.Fatalf("expect sql %s but %s got", expectSql, sql)
+	}
+
+	if len(sqlArgs) != 0 {
+		t.Fatalf("expect args num 0 but %d got (%v)", len(sqlArgs), sqlArgs)
+	}
+}
+
+func TestClauseUpdate(t *testing.T) {
+	var clause Clause
+	clause.Set(OpTypeUpdate, "user", map[string]interface{}{"Name": "name999", "Id": 123})
+	sql, sqlArgs := clause.Build()
+	t.Log(sql)
+	t.Log(sqlArgs)
+
+	expectSql := "update user set Name=?,Id=?"
+	if sql != expectSql {
+		t.Fatalf("expect sql %s but %s got", expectSql, sql)
+	}
+
+	if len(sqlArgs) != 2 {
+		t.Fatalf("expect args num 2 but %d got (%v)", len(sqlArgs), sqlArgs)
+	}
+
+	expectArgs := []interface{}{"name999", 123}
 	if !reflect.DeepEqual(expectArgs, sqlArgs) {
 		t.Fatalf("expect args %v, but %v got", expectArgs, sqlArgs)
 	}

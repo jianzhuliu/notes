@@ -11,6 +11,9 @@ const (
 	OpTypeBegin OpType = iota
 	OpTypeInsert
 	OpTypeSelect
+	OpTypeUpdate
+	OpTypeDelete
+	OpTypeCount
 	OpTypeWhere
 	OpTypeOrderBy
 	OpTypeLimit

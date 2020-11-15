@@ -31,6 +31,7 @@ func (s *Schema) GetField(fieldName string) *Field {
 	return s.fieldMap[fieldName]
 }
 
+//按字段顺序，转换成对应的值
 func (s *Schema) RecordValues(dest interface{}) []interface{} {
 	destValue := reflect.Indirect(reflect.ValueOf(dest))
 	fieldValues := make([]interface{}, 0, len(s.Fields))
