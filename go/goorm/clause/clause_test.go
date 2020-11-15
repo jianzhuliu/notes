@@ -48,7 +48,7 @@ func TestClauseBuild(t *testing.T) {
 	clause.Set(OpTypeLimit, 1, 9)
 	//t.Log(clause.sql[OpTypeLimit])
 
-	sql, sqlArgs := clause.Build(OpTypeSelect, OpTypeWhere, OpTypeOrderBy, OpTypeLimit)
+	sql, sqlArgs := clause.Build()
 
 	expectSql := "select Id,Name from user where Id=? and Name=? order by Id asc,Name desc limit ?,?"
 	//t.Log(sql)
@@ -72,7 +72,7 @@ func TestClauseBuildInsert(t *testing.T) {
 	values[1] = []interface{}{2, "name2"}
 	clause.Set(OpTypeValues, values...)
 
-	sql, sqlArgs := clause.Build(OpTypeInsert, OpTypeValues)
+	sql, sqlArgs := clause.Build()
 
 	expectSql := "insert into user (Id,Name) values(?,?),(?,?)"
 	//t.Log(sql)

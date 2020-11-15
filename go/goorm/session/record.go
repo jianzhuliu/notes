@@ -21,7 +21,7 @@ func (s *Session) Insert(values ...interface{}) (int64, error) {
 	}
 
 	s.clause.Set(clause.OpTypeValues, insertValues...)
-	sql, sqlArgs := s.clause.Build(clause.OpTypeInsert, clause.OpTypeValues)
+	sql, sqlArgs := s.clause.Build()
 	result, err := s.Sql(sql, sqlArgs...).Exec()
 	if err != nil {
 		return 0, err
@@ -41,7 +41,7 @@ func (s *Session) Find(values interface{}) (err error) {
 	table := s.Model(reflect.New(destType).Elem().Interface()).table
 
 	s.clause.Set(clause.OpTypeSelect, table.Name, table.FieldNames)
-	sql, sqlArgs := s.clause.Build(clause.OpTypeSelect)
+	sql, sqlArgs := s.clause.Build()
 	rows, err := s.Sql(sql, sqlArgs...).QueryRows()
 	if err != nil {
 		return

@@ -8,12 +8,14 @@ import (
 type OpType int
 
 const (
-	OpTypeInsert OpType = iota
+	OpTypeBegin OpType = iota
+	OpTypeInsert
 	OpTypeSelect
 	OpTypeWhere
 	OpTypeOrderBy
 	OpTypeLimit
 	OpTypeValues
+	OpTypeEnd
 )
 
 //不同操作类型，需要的sql语句与对应参数
@@ -35,11 +37,12 @@ func (c *Clause) Set(opType OpType, values ...interface{}) {
 }
 
 //构建 sql语句
-func (c *Clause) Build(opTypes ...OpType) (string, []interface{}) {
+func (c *Clause) Build() (string, []interface{}) {
 	var sqls []string
 	var args []interface{}
 
-	for _, opType := range opTypes {
+	for opType := OpTypeBegin + 1; opType < OpTypeEnd; opType++ {
+		//	for _, opType := range opTypes {
 		if sql, ok := c.sql[opType]; ok {
 			sqls = append(sqls, sql)
 			args = append(args, c.sqlArgs[opType]...)
