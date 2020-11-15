@@ -7,7 +7,7 @@ import (
 
 func TestClauseSet(t *testing.T) {
 	var clause Clause
-	clause.Set(OpTypeInsert, "user", "Id", "Name")
+	clause.Set(OpTypeInsert, "user", []string{"Id", "Name"})
 	sql := clause.sql[OpTypeInsert]
 	sqlArgs := clause.sqlArgs[OpTypeInsert]
 
@@ -41,7 +41,7 @@ func TestClauseSet(t *testing.T) {
 
 func TestClauseBuild(t *testing.T) {
 	var clause Clause
-	clause.Set(OpTypeSelect, "user", "Id", "Name")
+	clause.Set(OpTypeSelect, "user", []string{"Id", "Name"})
 	//t.Log(clause.sql[OpTypeSelect])
 	clause.Set(OpTypeWhere, "Id=? and Name=?", 1, "goorm")
 	clause.Set(OpTypeOrderBy, "Id asc", "Name desc")
@@ -65,7 +65,7 @@ func TestClauseBuild(t *testing.T) {
 
 func TestClauseBuildInsert(t *testing.T) {
 	var clause Clause
-	clause.Set(OpTypeInsert, "user", "Id", "Name")
+	clause.Set(OpTypeInsert, "user", []string{"Id", "Name"})
 
 	values := make([]interface{}, 2)
 	values[0] = []interface{}{1, "name1"}

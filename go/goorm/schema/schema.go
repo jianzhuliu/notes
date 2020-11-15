@@ -31,6 +31,16 @@ func (s *Schema) GetField(fieldName string) *Field {
 	return s.fieldMap[fieldName]
 }
 
+func (s *Schema) RecordValues(dest interface{}) []interface{} {
+	destValue := reflect.Indirect(reflect.ValueOf(dest))
+	fieldValues := make([]interface{}, 0, len(s.Fields))
+	for _, field := range s.Fields {
+		fieldValues = append(fieldValues, destValue.FieldByName(field.Name).Interface())
+	}
+
+	return fieldValues
+}
+
 type ITableName interface {
 	TableName() string
 }

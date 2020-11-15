@@ -23,24 +23,14 @@ func init() {
 //insert into table (?,?)
 func _insert(values ...interface{}) (string, []interface{}) {
 	tblname := values[0]
-	selectKeys := []string{}
-	for _, v := range values[1:] {
-		selectKeys = append(selectKeys, v.(string))
-	}
-
-	fields := strings.Join(selectKeys, ",")
+	fields := strings.Join(values[1].([]string), ",")
 	return fmt.Sprintf("insert into %s (%s)", tblname, fields), nil
 }
 
 //select * from ?
 func _select(values ...interface{}) (string, []interface{}) {
 	tblname := values[0]
-	selectKeys := []string{}
-	for _, v := range values[1:] {
-		selectKeys = append(selectKeys, v.(string))
-	}
-
-	fields := strings.Join(selectKeys, ",")
+	fields := strings.Join(values[1].([]string), ",")
 	return fmt.Sprintf("select %s from %s", fields, tblname), nil
 }
 
