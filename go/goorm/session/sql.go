@@ -19,7 +19,7 @@ func (s *Session) Sql(sql string, args ...interface{}) *Session {
 func (s *Session) Exec() (result sql.Result, err error) {
 	defer s.Clear()
 	log.Info(s.sql.String(), s.sqlArgs)
-	result, err = s.db.Exec(s.sql.String(), s.sqlArgs...)
+	result, err = s.DB().Exec(s.sql.String(), s.sqlArgs...)
 	if err != nil {
 		log.Error(err)
 	}
@@ -29,7 +29,7 @@ func (s *Session) Exec() (result sql.Result, err error) {
 func (s *Session) QueryRows() (rows *sql.Rows, err error) {
 	defer s.Clear()
 	log.Info(s.sql.String(), s.sqlArgs)
-	rows, err = s.db.Query(s.sql.String(), s.sqlArgs...)
+	rows, err = s.DB().Query(s.sql.String(), s.sqlArgs...)
 	if err != nil {
 		log.Error(err)
 	}
@@ -39,5 +39,5 @@ func (s *Session) QueryRows() (rows *sql.Rows, err error) {
 func (s *Session) QueryRow() *sql.Row {
 	defer s.Clear()
 	log.Info(s.sql.String(), s.sqlArgs)
-	return s.db.QueryRow(s.sql.String(), s.sqlArgs...)
+	return s.DB().QueryRow(s.sql.String(), s.sqlArgs...)
 }

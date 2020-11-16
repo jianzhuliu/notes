@@ -24,3 +24,17 @@ func GetDsnByDriver(driverType DriverType) (driver, dsn string) {
 
 	return
 }
+
+
+type User struct {
+	Id   int `goorm:"primary key"`
+	Name string
+}
+
+//自定义表名
+func (u *User) TableName() string {
+	return "user"
+}
+
+var User1 = &User{Id:1,Name:"name1"}
+var User2 = &User{Id:2,Name:"name2"}

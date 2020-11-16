@@ -61,14 +61,7 @@ func (s *Session) HasTable() bool {
 	sql, args := s.dialect.TableExistSQL(tblname)
 	row := s.Sql(sql, args...).QueryRow()
 	var db_tblname string
-	if err := row.Scan(&db_tblname); err != nil {
-		log.Error(err)
-		return false
-	}
+	_ = row.Scan(&db_tblname)
 
-	if db_tblname == tblname {
-		return true
-	}
-
-	return false
+	return db_tblname == tblname
 }

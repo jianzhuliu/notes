@@ -45,7 +45,7 @@ func TestHooks(t *testing.T) {
 	}
 
 	t.Log(result)
-	if result.Id != 101|| result.Passwd != "*******" {
+	if result.Id != 101 || result.Passwd != "*******" {
 		t.Fatal("fail to call hooks after query", result)
 	}
 }

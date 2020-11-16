@@ -24,6 +24,9 @@ type Session struct {
 
 	//语句构建
 	clause clause.Clause
+
+	//事务
+	tx *sql.Tx
 }
 
 func New(db *sql.DB, dialect dialect.Dialect) *Session {
@@ -33,8 +36,21 @@ func New(db *sql.DB, dialect dialect.Dialect) *Session {
 	}
 }
 
+type CommonDB interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+}
+
+var _ CommonDB = (*sql.DB)(nil)
+var _ CommonDB = (*sql.Tx)(nil)
+
 //获取db 对象
-func (s *Session) DB() *sql.DB {
+func (s *Session) DB() CommonDB {
+	if s.tx != nil {
+		return s.tx
+	}
+
 	return s.db
 }
 
