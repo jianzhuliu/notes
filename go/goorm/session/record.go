@@ -15,6 +15,7 @@ import (
 func (s *Session) Insert(values ...interface{}) (int64, error) {
 	insertValues := make([]interface{}, 0, len(values))
 	for _, value := range values {
+		s.CallMethod(BeforeInsert, value)
 		table := s.Model(value).table
 		s.clause.Set(clause.OpTypeInsert, table.Name, table.FieldNames)
 
@@ -28,6 +29,8 @@ func (s *Session) Insert(values ...interface{}) (int64, error) {
 		return 0, err
 	}
 
+	s.CallMethod(AfterInsert, nil)
+
 	return result.RowsAffected()
 }
 
@@ -35,6 +38,8 @@ func (s *Session) Insert(values ...interface{}) (int64, error) {
 //demo  var user []User{}
 //s.Find(&user)
 func (s *Session) Find(values interface{}) (err error) {
+	s.CallMethod(BeforeQuery, nil)
+
 	//查找切片对象对应的反射类型
 	destSlice := reflect.Indirect(reflect.ValueOf(values))
 	destType := destSlice.Type().Elem()
@@ -65,6 +70,8 @@ func (s *Session) Find(values interface{}) (err error) {
 			return
 		}
 
+		s.CallMethod(AfterQuery, dest.Addr().Interface())
+
 		destSlice.Set(reflect.Append(destSlice, dest))
 	}
 
@@ -90,6 +97,7 @@ func (s *Session) First(values interface{}) (err error) {
 
 //更新
 func (s *Session) Update(values ...interface{}) (int64, error) {
+	s.CallMethod(BeforeUpdate, nil)
 	kv, ok := values[0].(map[string]interface{})
 	if !ok {
 		return 0, errors.New("params err, should be map[string]interface{}")
@@ -101,6 +109,7 @@ func (s *Session) Update(values ...interface{}) (int64, error) {
 	if err != nil {
 		return 0, nil
 	}
+	s.CallMethod(AfterUpdate, nil)
 	return result.RowsAffected()
 }
 
@@ -118,12 +127,14 @@ func (s *Session) Count() (int64, error) {
 
 //delete
 func (s *Session) Delete() (int64, error) {
+	s.CallMethod(BeforeDelete, nil)
 	s.clause.Set(clause.OpTypeDelete, s.table.Name)
 	sql, sqlArgs := s.clause.Build()
 	result, err := s.Sql(sql, sqlArgs...).Exec()
 	if err != nil {
 		return 0, nil
 	}
+	s.CallMethod(AfterDelete, nil)
 	return result.RowsAffected()
 }
 
