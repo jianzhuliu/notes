@@ -53,3 +53,15 @@ func TestCommandCreate(t *testing.T) {
 		}
 	}
 }
+
+//测试命令显示所有字段信息
+func TestCommandFields(t *testing.T) {
+	args := []string{"cmd", "fields", "-table", "columns"}
+	runTest(args, t)
+}
+
+//测试命令显示所有字段信息
+func TestCommandColumns(t *testing.T) {
+	args := []string{"cmd", "columns", "-table", "columns"}
+	runTest(args, t)
+}

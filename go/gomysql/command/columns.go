@@ -1,4 +1,4 @@
-//the sub command "fields", created at "2020-11-21 15:49:45"
+//the sub command "columns", created at "2020-11-21 17:20:29"
 package command
 
 import (
@@ -10,10 +10,10 @@ import (
 
 func init() {
 	//新建子命令
-	subCommand := NewSubCommand("fields", "show fields from table")
+	subCommand := NewSubCommand("columns", "show column info")
 
 	//子命令配置执行函数
-	subCommand.SetRun(RunFields)
+	subCommand.SetRun(RunColumns)
 
 	//添加命令参数
 	subCommand.StringVar(&conf.V_db_table, "table", "", "show fields from table")
@@ -23,7 +23,7 @@ func init() {
 }
 
 //查看数据库版本号
-func RunFields() error {
+func RunColumns() error {
 	//参数校验
 	if len(conf.V_db_table) == 0 {
 		return fmt.Errorf("please set the table name, -table")
@@ -34,16 +34,16 @@ func RunFields() error {
 		return fmt.Errorf("the db driver=%s has not registered", conf.V_db_driver)
 	}
 
-	fields, err := Idb.Fields(conf.V_db_name, conf.V_db_table)
+	columnTypes, err := Idb.Columns(conf.V_db_table)
 	if err != nil {
 		return err
 	}
 
-	formatTmp := "|%-35s|%-15s|%-25s\n"
-	fmt.Printf(formatTmp, "ColumnName", "DataType", "ColumnType")
+	formatTmp := "|%-35s|%-15s\n"
+	fmt.Printf(formatTmp, "ColumnName", "DataType")
 	fmt.Println()
-	for _, column := range fields {
-		fmt.Printf(formatTmp, column.ColumnName, column.DataType, column.ColumnType)
+	for _, columnType := range columnTypes {
+		fmt.Printf(formatTmp, columnType.Name(), columnType.DatabaseTypeName())
 	}
 
 	return nil

@@ -1,7 +1,9 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
+
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -108,4 +110,15 @@ func (mysql *DbMysql) Fields(database, tblname string) ([]TableColumn, error) {
 	}
 
 	return result, nil
+}
+
+//根据表名，获取表字段信息
+func (mysql *DbMysql) Columns(tblname string) (columnTypes []*sql.ColumnType, err error) {
+	sql := fmt.Sprintf("select * from %s limit 1", tblname)
+	rows, err := mysql.Db().Query(sql)
+	if err != nil {
+		return
+	}
+	columnTypes, err = rows.ColumnTypes()
+	return
 }

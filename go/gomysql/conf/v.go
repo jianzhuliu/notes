@@ -12,6 +12,8 @@ var (
 	V_db_name   string
 	V_db_driver string
 
+	V_db_table string
+
 	V_helpFlag bool
 	V_version  bool
 )
