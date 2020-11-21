@@ -11,4 +11,7 @@ const (
 	C_db_passwd string = ""
 	C_db_name   string = "information_schema"
 	C_db_driver string = "mysql"
+
+	//时间格式化配置
+	C_time_layout string = "2006-01-02 15:04:05"
 )

@@ -3,6 +3,7 @@ package command
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -121,25 +122,12 @@ func (c *Commands) RunCommand(commandName string, args []string) error {
 			os.Exit(0)
 		}
 
-		Idb, ok := db.GetDb(conf.V_db_driver)
-		if !ok {
-			return fmt.Errorf("the db driver=%s has not registered", conf.V_db_driver)
-		}
-
-		var dsn string
-		switch conf.V_db_driver {
-		case db.DriverMysql:
-			dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local&charset=utf8",
-				conf.V_db_user, conf.V_db_passwd, conf.V_db_host, conf.V_db_port, conf.V_db_name)
-		}
-
-		if dsn == "" {
-			return fmt.Errorf("not defined driver=%s", conf.V_db_driver)
-		}
-
-		err := Idb.Open(dsn)
-		if err != nil {
-			return fmt.Errorf("fail to open db , driver=%s, dsn=%s, err=%s", conf.V_db_driver, dsn, err)
+		if !sub.skipDbInit {
+			//db 相关校验及配置
+			err := checkDb()
+			if err != nil {
+				return err
+			}
 		}
 
 		//显示配置的参数
@@ -172,6 +160,33 @@ func (c *Commands) Usage() {
 	os.Exit(0)
 }
 
+//db 相关校验及配置
+func checkDb() error {
+	Idb, ok := db.GetDb(conf.V_db_driver)
+	if !ok {
+		return fmt.Errorf("the db driver=%s has not registered", conf.V_db_driver)
+	}
+
+	var dsn string
+	switch conf.V_db_driver {
+	case db.DriverMysql:
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local&charset=utf8",
+			conf.V_db_user, conf.V_db_passwd, conf.V_db_host, conf.V_db_port, conf.V_db_name)
+	}
+
+	if dsn == "" {
+		return fmt.Errorf("not defined driver=%s", conf.V_db_driver)
+	}
+
+	log.Println(dsn)
+	err := Idb.Open(dsn)
+	if err != nil {
+		return fmt.Errorf("fail to open db , driver=%s, dsn=%s, err=%s", conf.V_db_driver, dsn, err)
+	}
+
+	return nil
+}
+
 ///////////////////////////////////////////子命令
 //子命令
 type SubCommand struct {
@@ -179,6 +194,8 @@ type SubCommand struct {
 	usageLine string //一行描述
 	fs        *flag.FlagSet
 	Run       func() error //执行入口,对外可配置
+
+	skipDbInit bool //是否跳过 db 初始化
 }
 
 //构造子命令
@@ -186,7 +203,13 @@ func NewSubCommand(name string, usageLine string) *SubCommand {
 	return &SubCommand{
 		name:      name,
 		usageLine: usageLine,
+		fs:        flag.NewFlagSet(name, flag.ExitOnError),
 	}
+}
+
+//新增参数配置
+func (sub *SubCommand) SetSkipDbInit(skipDbInit bool) {
+	sub.skipDbInit = skipDbInit
 }
 
 //对外可配置，说明文档
