@@ -15,9 +15,6 @@ func init() {
 	//子命令配置执行函数
 	subCommand.SetRun(RunFields)
 
-	//添加命令参数
-	subCommand.StringVar(&conf.V_db_table, "table", "", "show fields from table")
-
 	//添加子命令
 	AddCommand(subCommand)
 }

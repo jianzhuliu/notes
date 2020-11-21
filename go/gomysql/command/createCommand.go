@@ -75,6 +75,7 @@ func RunCreateCommand() error {
 
 	commandNameTitle := strings.Title(commandName)
 	curTime := time.Now().Format(conf.C_time_layout)
+
 	fileData := fmt.Sprintf(commandTemplate, commandName, commandDesc, commandNameTitle, curTime)
 
 	//写入文件
@@ -92,7 +93,6 @@ package command
 
 import (
 	"fmt"
-	"time"
 	
 	"gomysql/conf"
 	"gomysql/db"
@@ -104,24 +104,32 @@ func init() {
 
 	//子命令配置执行函数
 	subCommand.SetRun(Run%[3]s)
-
+	
 	//添加子命令
 	AddCommand(subCommand)
 }
 
 //查看数据库版本号
 func Run%[3]s() error {
+	//参数校验
 	Idb, ok := db.GetDb(conf.V_db_driver)
 	if !ok {
 		return fmt.Errorf("the db driver=%%s has not registered", conf.V_db_driver)
 	}
 
-	version, err := Idb.Version()
-	if err != nil {
+	db := Idb.Db()
+
+	sql := fmt.Sprintf("select version()")
+	row := db.QueryRow(sql)
+	
+	var version string 
+	if err := row.Scan(&version);err != nil {
 		return err
 	}
 	
-	fmt.Printf("[%%s] the mysql version is %%s \n", time.Now().Format(conf.C_time_layout), version)
+	fmt.Printf("the mysql version is %%s \n", version)
+	
+	
 	return nil
 }
 

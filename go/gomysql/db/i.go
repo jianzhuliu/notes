@@ -28,4 +28,10 @@ type Idb interface {
 
 	//根据表名，获取表结构信息
 	Columns(string) ([]*sql.ColumnType, error)
+
+	//查看数据库创建 sql 语句
+	ShowCreateDatabaseSql(string) (string, error)
+
+	//查看表创建 sql 语句
+	ShowCreateTableSql(string) (string, error)
 }

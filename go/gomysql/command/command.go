@@ -70,6 +70,7 @@ func setCommonParams(fs *flag.FlagSet) {
 	fs.StringVar(&conf.V_db_passwd, "passwd", conf.C_db_passwd, "set the db passwd")
 	fs.StringVar(&conf.V_db_name, "database", conf.C_db_name, "set the db name")
 	fs.StringVar(&conf.V_db_driver, "driver", conf.C_db_driver, "set the db driver")
+	fs.StringVar(&conf.V_db_table, "table", "", "set the db name")
 
 	//fs.BoolVar(&conf.V_helpFlag, "h", false, "show help information")
 }
@@ -162,11 +163,18 @@ func (c *Commands) Usage() {
 
 //db 相关校验及配置
 func checkDb() error {
+	//参数校验
+	if len(conf.V_db_driver) == 0 {
+		return fmt.Errorf("please set the driver, -driver")
+	}
+
+	//读取数据库引擎
 	Idb, ok := db.GetDb(conf.V_db_driver)
 	if !ok {
 		return fmt.Errorf("the db driver=%s has not registered", conf.V_db_driver)
 	}
 
+	//data source name
 	var dsn string
 	switch conf.V_db_driver {
 	case db.DriverMysql:
@@ -179,6 +187,8 @@ func checkDb() error {
 	}
 
 	log.Println(dsn)
+
+	//创建链接
 	err := Idb.Open(dsn)
 	if err != nil {
 		return fmt.Errorf("fail to open db , driver=%s, dsn=%s, err=%s", conf.V_db_driver, dsn, err)

@@ -114,11 +114,36 @@ func (mysql *DbMysql) Fields(database, tblname string) ([]TableColumn, error) {
 
 //根据表名，获取表字段信息
 func (mysql *DbMysql) Columns(tblname string) (columnTypes []*sql.ColumnType, err error) {
-	sql := fmt.Sprintf("select * from %s limit 1", tblname)
+	sql := fmt.Sprintf("select * from `%s` limit 1", tblname)
 	rows, err := mysql.Db().Query(sql)
 	if err != nil {
 		return
 	}
+
+	defer rows.Close()
+
 	columnTypes, err = rows.ColumnTypes()
+	return
+}
+
+//查看数据库创建 sql 语句
+func (mysql *DbMysql) ShowCreateDatabaseSql(database string) (create_database_sql string, err error) {
+	sql := fmt.Sprintf("show create database `%s`", database)
+	row := mysql.Db().QueryRow(sql)
+	var db_name string
+	err = row.Scan(&db_name, &create_database_sql)
+	_ = db_name
+
+	return
+}
+
+//查看表创建 sql 语句
+func (mysql *DbMysql) ShowCreateTableSql(tblname string) (create_table_sql string, err error) {
+	sql := fmt.Sprintf("show create table `%s`", tblname)
+	row := mysql.Db().QueryRow(sql)
+	var db_tblname string
+	err = row.Scan(&db_tblname, &create_table_sql)
+	_ = db_tblname
+
 	return
 }

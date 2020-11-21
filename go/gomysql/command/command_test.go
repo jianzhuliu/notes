@@ -14,6 +14,7 @@ func runTest(args []string, t *testing.T) {
 	defer func() { os.Args = oldArgs }()
 
 	os.Args = args
+	t.Log(os.Args)
 
 	err := Run()
 	if err != nil {
@@ -63,5 +64,17 @@ func TestCommandFields(t *testing.T) {
 //测试命令显示所有字段信息
 func TestCommandColumns(t *testing.T) {
 	args := []string{"cmd", "columns", "-table", "columns"}
+	runTest(args, t)
+}
+
+//测试命令创建表 sql
+func TestCommandCreateTableSql(t *testing.T) {
+	args := []string{"cmd", "showcreate", "-database", "earth_system", "-table", "account_user"}
+	runTest(args, t)
+}
+
+//测试命令创建数据库 sql
+func TestCommandCreateDatabaseSql(t *testing.T) {
+	args := []string{"cmd", "showcreate", "-database", "earth_system"}
 	runTest(args, t)
 }
