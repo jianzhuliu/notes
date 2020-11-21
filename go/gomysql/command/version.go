@@ -1,7 +1,10 @@
-package gomysql
+package command
 
 import (
 	"fmt"
+
+	"gomysql/conf"
+	"gomysql/db"
 )
 
 func init() {
@@ -17,7 +20,12 @@ func init() {
 
 //查看数据库版本号
 func RunVersion() error {
-	version, err := GetVersion()
+	Idb, ok := db.GetDb(conf.V_db_driver)
+	if !ok {
+		return fmt.Errorf("the db driver=%s has not registered", conf.V_db_driver)
+	}
+
+	version, err := Idb.Version()
 	if err != nil {
 		return err
 	}

@@ -1,10 +1,13 @@
-package gomysql
+package command
 
 import (
 	"flag"
 	"fmt"
 	"os"
 	"time"
+
+	"gomysql/conf"
+	"gomysql/db"
 )
 
 //对外入口
@@ -38,7 +41,7 @@ func NewCommands() *Commands {
 }
 
 func (c *Commands) setParams() {
-	//c.fs.BoolVar(&V_helpFlag, "h", false, "show help information")
+	//c.fs.BoolVar(&conf.V_helpFlag, "h", false, "show help information")
 }
 
 var BaseCommand = NewCommands()
@@ -60,13 +63,14 @@ func (c *Commands) AddCommand(sub *SubCommand) {
 
 //设置公共参数
 func setCommonParams(fs *flag.FlagSet) {
-	fs.StringVar(&V_db_host, "host", "127.0.0.1", "set the db host")
-	fs.IntVar(&V_db_port, "port", 3306, "set the db port")
-	fs.StringVar(&V_db_user, "user", "root", "set the db user")
-	fs.StringVar(&V_db_passwd, "passwd", "", "set the db passwd")
-	fs.StringVar(&V_db_name, "database", "", "set the db name")
+	fs.StringVar(&conf.V_db_host, "host", conf.C_db_host, "set the db host")
+	fs.IntVar(&conf.V_db_port, "port", conf.C_db_port, "set the db port")
+	fs.StringVar(&conf.V_db_user, "user", conf.C_db_user, "set the db user")
+	fs.StringVar(&conf.V_db_passwd, "passwd", conf.C_db_passwd, "set the db passwd")
+	fs.StringVar(&conf.V_db_name, "database", conf.C_db_name, "set the db name")
+	fs.StringVar(&conf.V_db_driver, "driver", conf.C_db_driver, "set the db driver")
 
-	//fs.BoolVar(&V_helpFlag, "h", false, "show help information")
+	//fs.BoolVar(&conf.V_helpFlag, "h", false, "show help information")
 }
 
 func (c *Commands) Parse(args []string) error {
@@ -112,15 +116,30 @@ func (c *Commands) RunCommand(commandName string, args []string) error {
 	if sub, ok := c.subCommandMap[commandName]; ok {
 		sub.parse(args)
 
-		if V_helpFlag {
+		if conf.V_helpFlag {
 			sub.fs.Usage()
 			os.Exit(0)
 		}
 
-		//设置 db
-		err := setDb()
+		Idb, ok := db.GetDb(conf.V_db_driver)
+		if !ok {
+			return fmt.Errorf("the db driver=%s has not registered", conf.V_db_driver)
+		}
+
+		var dsn string
+		switch conf.V_db_driver {
+		case db.DriverMysql:
+			dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local&charset=utf8",
+				conf.V_db_user, conf.V_db_passwd, conf.V_db_host, conf.V_db_port, conf.V_db_name)
+		}
+
+		if dsn == "" {
+			return fmt.Errorf("not defined driver=%s", conf.V_db_driver)
+		}
+
+		err := Idb.Open(dsn)
 		if err != nil {
-			return err
+			return fmt.Errorf("fail to open db , driver=%s, dsn=%s, err=%s", conf.V_db_driver, dsn, err)
 		}
 
 		//显示配置的参数

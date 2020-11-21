@@ -1,8 +1,11 @@
-package gomysql
+package command
 
 import (
 	"fmt"
 	"strings"
+
+	"gomysql/conf"
+	"gomysql/db"
 )
 
 func init() {
@@ -18,7 +21,12 @@ func init() {
 
 //显示数据库列表
 func RunDatabases() error {
-	databases, err := GetDatabases()
+	Idb, ok := db.GetDb(conf.V_db_driver)
+	if !ok {
+		return fmt.Errorf("the db driver=%s has not registered", conf.V_db_driver)
+	}
+
+	databases, err := Idb.Databases()
 	if err != nil {
 		return err
 	}

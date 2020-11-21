@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"gomysql"
+	"gomysql/command"
 )
 
 func main() {
-	err := gomysql.Run()
+	err := command.Run()
 	if err != nil {
 		fmt.Println("Run()|fail|", err)
 	}

@@ -1,4 +1,7 @@
-package gomysql
+/*
+变量配置
+*/
+package conf
 
 var (
 	//参数配置
@@ -7,6 +10,7 @@ var (
 	V_db_user   string
 	V_db_passwd string
 	V_db_name   string
+	V_db_driver string
 
 	V_helpFlag bool
 	V_version  bool
