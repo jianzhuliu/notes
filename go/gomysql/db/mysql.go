@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -50,6 +51,8 @@ func (mysql *DbMysql) Databases() ([]string, error) {
 		return nil, err
 	}
 
+	defer rows.Close()
+
 	var result []string
 	var database string
 	for rows.Next() {
@@ -69,6 +72,8 @@ func (mysql *DbMysql) Tables() ([]string, error) {
 		return nil, err
 	}
 
+	defer rows.Close()
+
 	var result []string
 	var tblname string
 	for rows.Next() {
@@ -78,5 +83,29 @@ func (mysql *DbMysql) Tables() ([]string, error) {
 
 		result = append(result, tblname)
 	}
+	return result, nil
+}
+
+//查看某个表的字段列表
+func (mysql *DbMysql) Fields(database, tblname string) ([]TableColumn, error) {
+	sql := fmt.Sprintf("select column_name,column_type,data_type from information_schema.columns where table_schema=? and table_name=?")
+	rows, err := mysql.Db().Query(sql, database, tblname)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var result []TableColumn
+	var tmpData = TableColumn{}
+
+	for rows.Next() {
+		if err = rows.Scan(&tmpData.ColumnName, &tmpData.ColumnType, &tmpData.DataType); err != nil {
+			return nil, err
+		}
+
+		result = append(result, tmpData)
+	}
+
 	return result, nil
 }

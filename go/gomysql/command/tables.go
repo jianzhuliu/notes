@@ -8,8 +8,6 @@ import (
 	"gomysql/db"
 )
 
-var tblname string
-
 func init() {
 	//新建子命令
 	subCommand := NewSubCommand("tables", " list the tables of a database")

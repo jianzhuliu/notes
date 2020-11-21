@@ -13,4 +13,5 @@ type Idb interface {
 	Version() (string, error)
 	Databases() ([]string, error)
 	Tables() ([]string, error)
+	Fields(string, string) ([]TableColumn, error)
 }

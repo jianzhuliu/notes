@@ -2,6 +2,7 @@ package command
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -36,4 +37,19 @@ func TestCommandDatabases(t *testing.T) {
 func TestCommandTables(t *testing.T) {
 	args := []string{"cmd", "tables"}
 	runTest(args, t)
+}
+
+//测试命令创建新命令
+func TestCommandCreate(t *testing.T) {
+	args := []string{"cmd", "command", "-name", "demo", "-desc", "demo desc", "-f"}
+	runTest(args, t)
+
+	curPath, _ := os.Getwd()
+	file := filepath.Join(curPath, "command", "demo.go")
+	_, err := os.Stat(file)
+	if err != nil {
+		if !os.IsExist(err) {
+			t.Fatal("fail to create new command file", err)
+		}
+	}
 }
