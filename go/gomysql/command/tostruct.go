@@ -28,6 +28,9 @@ func init() {
 
 //执行之前的处理，比如重新设置参数默认值
 func BeforeParseTostruct(sub *SubCommand) error {
+	//添加自定义参数
+	sub.BoolVar(&all, "all", false, "format all table to struct")
+
 	/*
 		//取消验证数据库名
 		sub.SetFlagValue("check_database", "false")
@@ -67,6 +70,37 @@ func RunTostruct() error {
 		for k, v := range tableToKind {
 			fmt.Printf("%-20s ========> %-20s \n", k, v)
 		}
+		return nil
+	} else {
+		//处理所有表
+		tables, err := Idb.Tables()
+		if err != nil {
+			return err
+		}
+
+		if len(tables) == 0 {
+			return fmt.Errorf("this is no table yet from database %s", conf.V_db_database)
+		}
+
+		allTables := make(map[string]map[string]string, len(tables))
+
+		for _, tblname := range tables {
+			tableToKind, err := Idb.TableToKind(conf.V_db_database, tblname)
+			if err != nil {
+				return err
+			}
+
+			allTables[tblname] = tableToKind
+		}
+
+		fmt.Printf("all table to kind of %s :\n", conf.V_db_database)
+		for tblname, tableToKind := range allTables {
+			fmt.Printf("\t%-15s--------------------------------------\n", tblname)
+			for k, v := range tableToKind {
+				fmt.Printf("\t\t%-20s ========> %-20s \n", k, v)
+			}
+		}
+
 		return nil
 	}
 
