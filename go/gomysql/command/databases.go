@@ -15,8 +15,18 @@ func init() {
 	//子命令配置执行函数
 	subCommand.SetRun(RunDatabases)
 
+	//设置解析参数前处理
+	subCommand.SetBeforeParse(BeforeParseDatabases)
+
 	//添加子命令
 	AddCommand(subCommand)
+}
+
+//执行之前的处理，比如重新设置参数默认值
+func BeforeParseDatabases(sub *SubCommand) error {
+	sub.SetFlagValue("check_database", "false")
+	sub.SetFlagValue("check_table", "false")
+	return nil
 }
 
 //显示数据库列表

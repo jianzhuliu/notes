@@ -11,6 +11,9 @@ type Idb interface {
 	//创建链接
 	Open(dsn string) error
 
+	//关闭链接
+	Close() error
+
 	//获取 db 对象
 	Db() *sql.DB
 
@@ -34,4 +37,10 @@ type Idb interface {
 
 	//查看表创建 sql 语句
 	ShowCreateTableSql(string) (string, error)
+
+	//根据字段信息，获取字段对应的 go 类型
+	KindOfDataType(TableColumn) (string, bool)
+
+	//获取某个库下单个表对应 struct 映射信息
+	TableToKind(string, string) (map[string]string, error)
 }

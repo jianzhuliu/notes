@@ -14,8 +14,18 @@ func init() {
 	//子命令配置执行函数
 	subCommand.SetRun(RunVersion)
 
+	//设置解析参数前处理
+	subCommand.SetBeforeParse(BeforeParseVersion)
+
 	//添加子命令
 	AddCommand(subCommand)
+}
+
+//执行之前的处理，比如重新设置参数默认值
+func BeforeParseVersion(sub *SubCommand) error {
+	sub.SetFlagValue("check_database", "false")
+	sub.SetFlagValue("check_table", "false")
+	return nil
 }
 
 //查看数据库版本号

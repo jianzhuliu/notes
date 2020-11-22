@@ -10,7 +10,7 @@ import (
 
 //测试使用mysql默认配置
 var test_dsn string = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local&charset=utf8",
-	conf.C_db_user, conf.C_db_passwd, conf.C_db_host, conf.C_db_port, conf.C_db_name)
+	conf.C_db_user, conf.C_db_passwd, conf.C_db_host, conf.C_db_port, conf.C_db_database)
 
 //获取一个db接口实现对象
 func openMysql(t *testing.T) Idb {
@@ -68,4 +68,40 @@ func TestTables(t *testing.T) {
 	}
 
 	t.Log(strings.Join(tables, "\r\n"))
+}
+
+type mysqlTypeTest struct {
+	tableColumn TableColumn
+	expect      string
+	ok          bool
+}
+
+//表类型测试数据
+var mysqlTypeTests = []mysqlTypeTest{
+	{TableColumn{"name1", "int(11)", "int"}, "int", true},
+	{TableColumn{"name2", "int(11) unsigned", "int"}, "uint", true},
+	{TableColumn{"name3", "int", "int"}, "int", true},
+	{TableColumn{"name4", "int unsigned", "int"}, "uint", true},
+
+	{TableColumn{"name5", "char", "char"}, "string", true},
+	{TableColumn{"name6", "char(10)", "char"}, "string", true},
+
+	{TableColumn{"name7", "varchar(20)", "varchar"}, "string", true},
+	{TableColumn{"name8", "char(10)", "char"}, "string", true},
+
+	{TableColumn{"name9", "timestamp", "timestamp"}, "time.Time", true},
+
+	{TableColumn{"name10", "float", "float"}, "float32", true},
+	{TableColumn{"name11", "float(10,2)", "float"}, "float32", true},
+}
+
+//测试表类型映射
+func TestKindOfDataType(t *testing.T) {
+	Idb := openMysql(t)
+	for _, info := range mysqlTypeTests {
+		out, ok := Idb.KindOfDataType(info.tableColumn)
+		if out != info.expect || ok != info.ok {
+			t.Fatalf("%s expect %q, %t, but got %q, %t. tableColumn:%+v", info.tableColumn.ColumnName, info.expect, info.ok, out, ok, info.tableColumn)
+		}
+	}
 }

@@ -15,6 +15,10 @@ func init() {
 	//子命令配置执行函数
 	subCommand.SetRun(RunShowcreate)
 
+	//设置命令参数固定值
+	//subCommand.SetFlagValue("check_database", "false")
+	//subCommand.SetFlagValue("check_table", "false")
+
 	//添加子命令
 	AddCommand(subCommand)
 }
@@ -23,8 +27,8 @@ func init() {
 func RunShowcreate() error {
 	//参数校验
 	///*
-	if len(conf.V_db_name) == 0 && len(conf.V_db_table) == 0 {
-		if len(conf.V_db_name) == 0 {
+	if len(conf.V_db_database) == 0 && len(conf.V_db_table) == 0 {
+		if len(conf.V_db_database) == 0 {
 			return fmt.Errorf("please set the database name, -database")
 		}
 
@@ -53,13 +57,13 @@ func RunShowcreate() error {
 	}
 
 	//查看数据库创建 sql
-	if len(conf.V_db_name) > 0 {
-		create_database_sql, err := Idb.ShowCreateDatabaseSql(conf.V_db_name)
+	if len(conf.V_db_database) > 0 {
+		create_database_sql, err := Idb.ShowCreateDatabaseSql(conf.V_db_database)
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("[ %s] create_database_sql:\n", conf.V_db_name)
+		fmt.Printf("[ %s] create_database_sql:\n", conf.V_db_database)
 		fmt.Println(create_database_sql)
 
 		return nil

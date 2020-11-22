@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -33,6 +34,11 @@ func init() {
 //打开链接
 func (mysql *DbMysql) Open(dsn string) error {
 	return mysql.open(DriverMysql, dsn)
+}
+
+//关闭链接
+func (mysql *DbMysql) Close() error {
+	return mysql.Db().Close()
 }
 
 //获取版本号
@@ -102,9 +108,14 @@ func (mysql *DbMysql) Fields(database, tblname string) ([]TableColumn, error) {
 	var tmpData = TableColumn{}
 
 	for rows.Next() {
-		if err = rows.Scan(&tmpData.ColumnName, &tmpData.ColumnType, &tmpData.DataType); err != nil {
+		var columnName, columnType, dateType string
+		if err = rows.Scan(&columnName, &columnType, &dateType); err != nil {
 			return nil, err
 		}
+
+		tmpData.ColumnName = columnName
+		tmpData.ColumnType = strings.ToLower(columnType)
+		tmpData.DataType = strings.ToLower(dateType)
 
 		result = append(result, tmpData)
 	}
@@ -146,4 +157,61 @@ func (mysql *DbMysql) ShowCreateTableSql(tblname string) (create_table_sql strin
 	_ = db_tblname
 
 	return
+}
+
+//获取表字段对应 go 类型
+func (mysql *DbMysql) KindOfDataType(tableColumn TableColumn) (string, bool) {
+	nameLen := len(tableColumn.DataType)
+	if nameLen < 3 {
+		return "", false
+	}
+
+	//表字段数据类型
+	dataType := tableColumn.DataType
+
+	if nameLen == 3 {
+		//长度不足4个，凑够4个
+		dataType += " "
+	}
+
+	var searchMap map[string]string = TypeMysqlToKind
+	if strings.Contains(tableColumn.ColumnType, "unsigned") {
+		searchMap = UnsignedTypeMysqlToKind
+	}
+
+	//首先根据前4个字符来查询
+	namePreThree := strings.TrimSpace(dataType[0:4])
+	if str, ok := searchMap[namePreThree]; ok {
+		return str, true
+	}
+
+	//全字段匹配
+	if str, ok := WholeTypeMysqlToKind[tableColumn.DataType]; ok {
+		return str, ok
+	}
+
+	return "", false
+}
+
+//获取单个表对应 struct 映射信息
+func (mysql *DbMysql) TableToKind(database, tblname string) (map[string]string, error) {
+	//获取表下所有字段信息
+	tableFields, err := mysql.Fields(database, tblname)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]string, len(tableFields))
+
+	//解析表下各个字段
+	for _, tableColumn := range tableFields {
+		kindStr, ok := mysql.KindOfDataType(tableColumn)
+		if !ok {
+			return nil, fmt.Errorf("fail to get kind of column[%s],tableColumn:%+v", tableColumn.ColumnName, tableColumn)
+		}
+
+		result[tableColumn.ColumnName] = kindStr
+	}
+
+	return result, nil
 }

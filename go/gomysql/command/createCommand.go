@@ -40,6 +40,7 @@ func init() {
 //创建一个子命令模板
 func RunCreateCommand() error {
 	//参数校验
+
 	if len(commandName) == 0 {
 		return fmt.Errorf("please set the name of a sub command, -name")
 	}
@@ -76,7 +77,17 @@ func RunCreateCommand() error {
 	commandNameTitle := strings.Title(commandName)
 	curTime := time.Now().Format(conf.C_time_layout)
 
-	fileData := fmt.Sprintf(commandTemplate, commandName, commandDesc, commandNameTitle, curTime)
+	checkDatabase := ""
+	if !conf.V_check_database {
+		checkDatabase = "/"
+	}
+
+	checkTable := ""
+	if !conf.V_check_table {
+		checkTable = "/"
+	}
+
+	fileData := fmt.Sprintf(commandTemplate, commandName, commandDesc, commandNameTitle, curTime, checkDatabase, checkTable)
 
 	//写入文件
 	err = ioutil.WriteFile(commandFile, []byte(fileData), os.ModePerm)
@@ -105,18 +116,37 @@ func init() {
 	//子命令配置执行函数
 	subCommand.SetRun(Run%[3]s)
 	
+	//设置解析参数前处理
+	subCommand.SetBeforeParse(BeforeParse%[3]s)
+	
 	//添加子命令
 	AddCommand(subCommand)
 }
 
+//执行之前的处理，比如重新设置参数默认值
+func BeforeParse%[3]s (sub *SubCommand) error {
+	%[5]s/*
+	//取消验证数据库名
+	sub.SetFlagValue("check_database", "false")
+	//*/
+	
+	%[6]s/*
+	//取消验证表名
+	sub.SetFlagValue("check_table", "false")
+	//*/
+	
+	return nil
+}
+
 //查看数据库版本号
 func Run%[3]s() error {
-	//参数校验
 	Idb, ok := db.GetDb(conf.V_db_driver)
 	if !ok {
 		return fmt.Errorf("the db driver=%%s has not registered", conf.V_db_driver)
 	}
 
+	//version, err := Idb.Version()
+	
 	db := Idb.Db()
 
 	sql := fmt.Sprintf("select version()")

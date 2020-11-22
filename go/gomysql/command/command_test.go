@@ -69,12 +69,12 @@ func TestCommandColumns(t *testing.T) {
 
 //测试命令创建表 sql
 func TestCommandCreateTableSql(t *testing.T) {
-	args := []string{"cmd", "showcreate", "-database", "earth_system", "-table", "account_user"}
+	args := []string{"cmd", "showcreate", "-database", "gomysql", "-table", "account_user"}
 	runTest(args, t)
 }
 
 //测试命令创建数据库 sql
 func TestCommandCreateDatabaseSql(t *testing.T) {
-	args := []string{"cmd", "showcreate", "-database", "earth_system"}
+	args := []string{"cmd", "showcreate", "-database", "gomysql"}
 	runTest(args, t)
 }

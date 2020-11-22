@@ -68,9 +68,12 @@ func setCommonParams(fs *flag.FlagSet) {
 	fs.IntVar(&conf.V_db_port, "port", conf.C_db_port, "set the db port")
 	fs.StringVar(&conf.V_db_user, "user", conf.C_db_user, "set the db user")
 	fs.StringVar(&conf.V_db_passwd, "passwd", conf.C_db_passwd, "set the db passwd")
-	fs.StringVar(&conf.V_db_name, "database", conf.C_db_name, "set the db name")
+	fs.StringVar(&conf.V_db_database, "database", conf.C_db_database, "set the database name")
 	fs.StringVar(&conf.V_db_driver, "driver", conf.C_db_driver, "set the db driver")
 	fs.StringVar(&conf.V_db_table, "table", "", "set the db name")
+
+	fs.BoolVar(&conf.V_check_database, "check_database", true, "show help information")
+	fs.BoolVar(&conf.V_check_table, "check_table", true, "show help information")
 
 	//fs.BoolVar(&conf.V_helpFlag, "h", false, "show help information")
 }
@@ -116,6 +119,13 @@ func (c *Commands) Run() (err error) {
 func (c *Commands) RunCommand(commandName string, args []string) error {
 	//匹配子命令
 	if sub, ok := c.subCommandMap[commandName]; ok {
+		if sub.BeforeParse != nil {
+			err := sub.BeforeParse(sub)
+			if err != nil {
+				return err
+			}
+		}
+
 		sub.parse(args)
 
 		if conf.V_helpFlag {
@@ -123,16 +133,19 @@ func (c *Commands) RunCommand(commandName string, args []string) error {
 			os.Exit(0)
 		}
 
+		//显示配置的参数
+		sub.showParams()
+
 		if !sub.skipDbInit {
 			//db 相关校验及配置
 			err := checkDb()
 			if err != nil {
 				return err
 			}
-		}
 
-		//显示配置的参数
-		sub.showParams()
+			//关闭 db
+			defer closeDb()
+		}
 
 		//执行子命令
 		if sub.Run != nil {
@@ -168,6 +181,20 @@ func checkDb() error {
 		return fmt.Errorf("please set the driver, -driver")
 	}
 
+	//验证数据库名
+	if conf.V_check_database {
+		if len(conf.V_db_database) == 0 {
+			return fmt.Errorf("please set the database name, -database")
+		}
+	}
+
+	//验证表
+	if conf.V_check_table {
+		if len(conf.V_db_table) == 0 {
+			return fmt.Errorf("please set the table name, -table")
+		}
+	}
+
 	//读取数据库引擎
 	Idb, ok := db.GetDb(conf.V_db_driver)
 	if !ok {
@@ -179,7 +206,7 @@ func checkDb() error {
 	switch conf.V_db_driver {
 	case db.DriverMysql:
 		dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local&charset=utf8",
-			conf.V_db_user, conf.V_db_passwd, conf.V_db_host, conf.V_db_port, conf.V_db_name)
+			conf.V_db_user, conf.V_db_passwd, conf.V_db_host, conf.V_db_port, conf.V_db_database)
 	}
 
 	if dsn == "" {
@@ -197,13 +224,22 @@ func checkDb() error {
 	return nil
 }
 
+//关闭数据库连接
+func closeDb() {
+	Idb, ok := db.GetDb(conf.V_db_driver)
+	if ok {
+		Idb.Close()
+	}
+}
+
 ///////////////////////////////////////////子命令
 //子命令
 type SubCommand struct {
-	name      string //子命令名称
-	usageLine string //一行描述
-	fs        *flag.FlagSet
-	Run       func() error //执行入口,对外可配置
+	name        string //子命令名称
+	usageLine   string //一行描述
+	fs          *flag.FlagSet
+	Run         func() error            //执行入口,对外可配置
+	BeforeParse func(*SubCommand) error //设置解析参数前处理，对外可配置
 
 	skipDbInit bool //是否跳过 db 初始化
 }
@@ -227,9 +263,22 @@ func (sub *SubCommand) SetUsage(fn func()) {
 	sub.fs.Usage = fn
 }
 
+//对外可配置，设置解析参数前处理
+func (sub *SubCommand) SetBeforeParse(fn func(*SubCommand) error) {
+	sub.BeforeParse = fn
+}
+
 //对外可配置，执行入口
 func (sub *SubCommand) SetRun(fn func() error) {
 	sub.Run = fn
+}
+
+//设置参数值
+func (sub *SubCommand) SetFlagValue(name, value string) {
+	err := sub.fs.Set(name, value)
+	if err != nil {
+		panic(err)
+	}
 }
 
 //解析参数

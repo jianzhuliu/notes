@@ -21,13 +21,6 @@ func init() {
 
 //查看数据库版本号
 func RunTest() error {
-	//参数校验
-	///*
-	if len(conf.V_db_table) == 0 {
-		return fmt.Errorf("please set the table name, -table")
-	}
-	//*/
-
 	Idb, ok := db.GetDb(conf.V_db_driver)
 	if !ok {
 		return fmt.Errorf("the db driver=%s has not registered", conf.V_db_driver)

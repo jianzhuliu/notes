@@ -21,13 +21,6 @@ func init() {
 
 //查看数据库版本号
 func RunColumntype() error {
-	//参数校验
-	///*
-	if len(conf.V_db_table) == 0 {
-		return fmt.Errorf("please set the table name, -table")
-	}
-	//*/
-
 	Idb, ok := db.GetDb(conf.V_db_driver)
 	if !ok {
 		return fmt.Errorf("the db driver=%s has not registered", conf.V_db_driver)
@@ -45,12 +38,14 @@ func RunColumntype() error {
 	defer rows.Close()
 
 	columnTypes, err := rows.ColumnTypes()
-	formatTmp := "|%-35s|%-15s|%-20s|%-15s|%-20s|%-30s\n"
-	fmt.Printf(formatTmp, "ColumnName", "DataType", "ScanTypeName", "nullable, ok", "length,ok", "precision, scale,ok")
+	formatTmp := "|%-35s|%-15s|%-20s|%-20s|%-15s|%-20s|%-30s\n"
+	fmt.Printf(formatTmp, "ColumnName", "DataType", "ScanTypeName", "ScanTypeKind", "nullable, ok", "length,ok", "precision, scale,ok")
 	fmt.Println()
 
 	for _, columnType := range columnTypes {
 		scanTypeName := columnType.ScanType().Name()
+		scanTypeKind := columnType.ScanType().Kind()
+
 		nullable, ok := columnType.Nullable()
 		nullStr := fmt.Sprintf("%t,%t", nullable, ok)
 
@@ -60,7 +55,7 @@ func RunColumntype() error {
 		precision, scale, ok := columnType.DecimalSize()
 		precisionScaleStr := fmt.Sprintf("%[1]T,%[1]v,%[2]T,%[2]v,%t", precision, scale, ok)
 
-		fmt.Printf(formatTmp, columnType.Name(), columnType.DatabaseTypeName(), scanTypeName,
+		fmt.Printf(formatTmp, columnType.Name(), columnType.DatabaseTypeName(), scanTypeName, scanTypeKind,
 			nullStr, lengthStr, precisionScaleStr)
 	}
 
