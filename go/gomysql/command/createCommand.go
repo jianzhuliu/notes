@@ -77,11 +77,13 @@ func RunCreateCommand() error {
 	commandNameTitle := strings.Title(commandName)
 	curTime := time.Now().Format(conf.C_time_layout)
 
+	//是否跳过检查数据库
 	checkDatabase := ""
 	if !conf.V_check_database {
 		checkDatabase = "/"
 	}
 
+	//是否跳过检查表名
 	checkTable := ""
 	if !conf.V_check_table {
 		checkTable = "/"
@@ -113,6 +115,9 @@ func init() {
 	//新建子命令
 	subCommand := NewSubCommand("%[1]s", "%[2]s")
 
+	//跳过db 校验及初始化
+	//subCommand.SetSkipDbInit(true)
+	
 	//子命令配置执行函数
 	subCommand.SetRun(Run%[3]s)
 	

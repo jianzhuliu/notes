@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	all bool //是否处理所有表
+	all bool   //是否处理所有表
+	out string //保存目录
 )
 
 func init() {
@@ -30,6 +31,7 @@ func init() {
 func BeforeParseTostruct(sub *SubCommand) error {
 	//添加自定义参数
 	sub.BoolVar(&all, "all", false, "format all table to struct")
+	sub.StringVar(&out, "out", "", "set the outpath")
 
 	/*
 		//取消验证数据库名
@@ -70,6 +72,7 @@ func RunTostruct() error {
 		for k, v := range tableToKind {
 			fmt.Printf("%-20s ========> %-20s \n", k, v)
 		}
+
 		return nil
 	} else {
 		//处理所有表
@@ -103,20 +106,9 @@ func RunTostruct() error {
 
 		return nil
 	}
+}
 
-	//version, err := Idb.Version()
-
-	db := Idb.Db()
-
-	sql := fmt.Sprintf("select version()")
-	row := db.QueryRow(sql)
-
-	var version string
-	if err := row.Scan(&version); err != nil {
-		return err
-	}
-
-	fmt.Printf("the mysql version is %s \n", version)
-
-	return nil
+//生成表对应结构体
+func genTableStruct() string {
+	return ""
 }
