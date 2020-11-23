@@ -106,6 +106,7 @@ func (mysql *DbMysql) Fields(database, tblname string) ([]TableColumn, error) {
 
 	var result []TableColumn
 	var tmpData = TableColumn{}
+	var orderby uint8
 
 	for rows.Next() {
 		var columnName, columnType, dateType string
@@ -113,9 +114,13 @@ func (mysql *DbMysql) Fields(database, tblname string) ([]TableColumn, error) {
 			return nil, err
 		}
 
+		orderby++
+		tmpData.DbOrder = orderby
 		tmpData.ColumnName = columnName
 		tmpData.ColumnType = strings.ToLower(columnType)
 		tmpData.DataType = strings.ToLower(dateType)
+
+		tmpData.KindStr, _ = mysql.KindOfDataType(tmpData)
 
 		result = append(result, tmpData)
 	}
@@ -191,27 +196,4 @@ func (mysql *DbMysql) KindOfDataType(tableColumn TableColumn) (string, bool) {
 	}
 
 	return "", false
-}
-
-//获取单个表对应 struct 映射信息
-func (mysql *DbMysql) TableToKind(database, tblname string) (map[string]string, error) {
-	//获取表下所有字段信息
-	tableFields, err := mysql.Fields(database, tblname)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[string]string, len(tableFields))
-
-	//解析表下各个字段
-	for _, tableColumn := range tableFields {
-		kindStr, ok := mysql.KindOfDataType(tableColumn)
-		if !ok {
-			return nil, fmt.Errorf("fail to get kind of column[%s],tableColumn:%+v", tableColumn.ColumnName, tableColumn)
-		}
-
-		result[tableColumn.ColumnName] = kindStr
-	}
-
-	return result, nil
 }

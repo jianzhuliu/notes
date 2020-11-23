@@ -40,7 +40,4 @@ type Idb interface {
 
 	//根据字段信息，获取字段对应的 go 类型
 	KindOfDataType(TableColumn) (string, bool)
-
-	//获取某个库下单个表对应 struct 映射信息
-	TableToKind(string, string) (map[string]string, error)
 }

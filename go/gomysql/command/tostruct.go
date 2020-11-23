@@ -62,15 +62,15 @@ func RunTostruct() error {
 
 	if len(conf.V_db_table) > 0 {
 		//处理单个表
-		tableToKind, err := Idb.TableToKind(conf.V_db_database, conf.V_db_table)
+		tableColumns, err := Idb.Fields(conf.V_db_database, conf.V_db_table)
 
 		if err != nil {
 			return err
 		}
 
 		fmt.Printf("%s of %s to kind:\n", conf.V_db_table, conf.V_db_database)
-		for k, v := range tableToKind {
-			fmt.Printf("%-20s ========> %-20s \n", k, v)
+		for _, column := range tableColumns {
+			fmt.Printf("%-20s ========> %-20s \n", column.ColumnName, column.KindStr)
 		}
 
 		return nil
@@ -85,22 +85,22 @@ func RunTostruct() error {
 			return fmt.Errorf("this is no table yet from database %s", conf.V_db_database)
 		}
 
-		allTables := make(map[string]map[string]string, len(tables))
+		allTables := make(map[string][]db.TableColumn, len(tables))
 
 		for _, tblname := range tables {
-			tableToKind, err := Idb.TableToKind(conf.V_db_database, tblname)
+			tableColumns, err := Idb.Fields(conf.V_db_database, tblname)
 			if err != nil {
 				return err
 			}
 
-			allTables[tblname] = tableToKind
+			allTables[tblname] = tableColumns
 		}
 
 		fmt.Printf("all table to kind of %s :\n", conf.V_db_database)
-		for tblname, tableToKind := range allTables {
+		for tblname, tableColumns := range allTables {
 			fmt.Printf("\t%-15s--------------------------------------\n", tblname)
-			for k, v := range tableToKind {
-				fmt.Printf("\t\t%-20s ========> %-20s \n", k, v)
+			for _, column := range tableColumns {
+				fmt.Printf("\t\t%-20s ========> %-20s \n", column.ColumnName, column.KindStr)
 			}
 		}
 
