@@ -119,8 +119,10 @@ func (mysql *DbMysql) Fields(database, tblname string) ([]TableColumn, error) {
 		tmpData.ColumnName = columnName
 		tmpData.ColumnType = strings.ToLower(columnType)
 		tmpData.DataType = strings.ToLower(dateType)
-
+	
+		//匹配对应的 kind 及 size
 		tmpData.KindStr, _ = mysql.KindOfDataType(tmpData)
+		tmpData.KindSize,_ = KindSizeMap[tmpData.KindStr]
 
 		result = append(result, tmpData)
 	}

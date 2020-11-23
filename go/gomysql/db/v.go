@@ -1,6 +1,6 @@
 package db
 
-var KindSizeMap = map[string]int{
+var KindSizeMap = map[string]uint8{
 	"int8":      1,
 	"uint8":     1,
 	"int16":     2,
