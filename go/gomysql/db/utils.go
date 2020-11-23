@@ -2,15 +2,15 @@ package db
 
 import (
 	"bytes"
-	"strings"
 	"sort"
+	"strings"
 	"time"
-	
-	"text/template"
+
 	"gomysql/conf"
+	"text/template"
 )
 
-/////////////////////////////////表结构转换为 struct 
+/////////////////////////////////表结构转换为 struct
 
 const tmplTableToStruct = `
 
@@ -24,18 +24,18 @@ type T_{{.tblname|title}} Struct{
 
 var tableToStructT = template.Must(template.New("table_to_struct").
 	Funcs(template.FuncMap{
-		"title":strings.Title,
+		"title": strings.Title,
 	}).
 	Parse(tmplTableToStruct))
 
-func ToStruct(tblname string, tableColumns TableColumnSice) (string, error){
+func ToStruct(tblname string, tableColumns TableColumnSice) (string, error) {
 	var buf bytes.Buffer
-	
+
 	sort.Sort(tableColumns)
 	data := map[string]interface{}{
-		"tblname": tblname,
-		"tableColumns":tableColumns,
-		"created":time.Now().Format(conf.C_time_layout),
+		"tblname":      tblname,
+		"tableColumns": tableColumns,
+		"created":      time.Now().Format(conf.C_time_layout),
 	}
 	err := tableToStructT.Execute(&buf, data)
 	if err != nil {

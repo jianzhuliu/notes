@@ -32,7 +32,7 @@ func RunFields() error {
 	}
 
 	formatTmp := "|%-10v|%-35s|%-15s|%-10v|%-15s|%-35s\n"
-	fmt.Printf(formatTmp, "DbOrder", "ColumnName", "KindStr","KindSize", "DataType", "ColumnType")
+	fmt.Printf(formatTmp, "DbOrder", "ColumnName", "KindStr", "KindSize", "DataType", "ColumnType")
 	fmt.Println()
 	for _, column := range fields {
 		fmt.Printf(formatTmp, column.DbOrder, column.ColumnName, column.KindStr, column.KindSize, column.DataType, column.ColumnType)

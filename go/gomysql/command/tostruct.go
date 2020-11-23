@@ -69,17 +69,17 @@ func RunTostruct() error {
 		}
 
 		/*
-		fmt.Printf("%s of %s to kind:\n", conf.V_db_table, conf.V_db_database)
-		for _, column := range tableColumns {
-			fmt.Printf("%-20s ========> %-20s \n", column.ColumnName, column.KindStr)
-		}
-		//*/
-		
+			fmt.Printf("%s of %s to kind:\n", conf.V_db_table, conf.V_db_database)
+			for _, column := range tableColumns {
+				fmt.Printf("%-20s ========> %-20s \n", column.ColumnName, column.KindStr)
+			}
+			//*/
+
 		str, err := db.ToStruct(conf.V_db_table, tableColumns)
 		if err != nil {
 			return err
 		}
-		fmt.Println("====================\n",str)
+		fmt.Println("====================\n", str)
 
 		return nil
 	} else {
@@ -107,23 +107,20 @@ func RunTostruct() error {
 		fmt.Printf("all table to kind of %s :\n", conf.V_db_database)
 		for tblname, tableColumns := range allTables {
 			/*
-			fmt.Printf("\t%-15s--------------------------------------\n", tblname)
-			for _, column := range tableColumns {
-				fmt.Printf("\t\t%-20s ========> %-20s \n", column.ColumnName, column.KindStr)
-			}
-			//*/
-			
+				fmt.Printf("\t%-15s--------------------------------------\n", tblname)
+				for _, column := range tableColumns {
+					fmt.Printf("\t\t%-20s ========> %-20s \n", column.ColumnName, column.KindStr)
+				}
+				//*/
+
 			str, err := db.ToStruct(tblname, tableColumns)
 			if err != nil {
 				return err
 			}
-			
+
 			fmt.Println(str)
 		}
 
 		return nil
 	}
 }
-
-
-
