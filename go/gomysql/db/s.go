@@ -9,9 +9,10 @@ type TableColumn struct {
 	KindSize uint8  //对应 kind size大小
 	KindStr  string //对应 kind 类型
 
-	ColumnName string //字段名
-	ColumnType string //字段类型
-	DataType   string //字段数据类型
+	ColumnName    string //字段名
+	ColumnType    string //字段类型
+	DataType      string //字段数据类型
+	ColumnComment string //字段描述
 }
 
 type TableColumnSice []TableColumn

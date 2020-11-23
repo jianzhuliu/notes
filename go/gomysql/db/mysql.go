@@ -95,8 +95,9 @@ func (mysql *DbMysql) Tables() ([]string, error) {
 }
 
 //查看某个表的字段列表
-func (mysql *DbMysql) Fields(database, tblname string) ([]TableColumn, error) {
-	sql := fmt.Sprintf("select column_name,column_type,data_type from information_schema.columns where table_schema=? and table_name=?")
+func (mysql *DbMysql) Fields(database, tblname string) (TableColumnSice, error) {
+	//select * from information_schema.columns where table_schema=gomysql and table_name=columns
+	sql := fmt.Sprintf("select column_name,column_type,data_type,column_comment from information_schema.columns where table_schema=? and table_name=?")
 	rows, err := mysql.Db().Query(sql, database, tblname)
 	if err != nil {
 		return nil, err
@@ -104,13 +105,13 @@ func (mysql *DbMysql) Fields(database, tblname string) ([]TableColumn, error) {
 
 	defer rows.Close()
 
-	var result []TableColumn
+	var result TableColumnSice
 	var tmpData = TableColumn{}
 	var orderby uint8
 
 	for rows.Next() {
-		var columnName, columnType, dateType string
-		if err = rows.Scan(&columnName, &columnType, &dateType); err != nil {
+		var columnName, columnType, dateType, columnComment string
+		if err = rows.Scan(&columnName, &columnType, &dateType, &columnComment); err != nil {
 			return nil, err
 		}
 
@@ -119,6 +120,7 @@ func (mysql *DbMysql) Fields(database, tblname string) ([]TableColumn, error) {
 		tmpData.ColumnName = columnName
 		tmpData.ColumnType = strings.ToLower(columnType)
 		tmpData.DataType = strings.ToLower(dateType)
+		tmpData.ColumnComment = columnComment
 
 		//匹配对应的 kind 及 size
 		tmpData.KindStr, _ = mysql.KindOfDataType(tmpData)

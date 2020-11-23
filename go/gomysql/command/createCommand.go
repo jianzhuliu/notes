@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"gomysql/conf"
+	"gomysql/utils"
 )
 
 var (
@@ -28,13 +29,31 @@ func init() {
 	//子命令配置执行函数
 	subCommand.SetRun(RunCreateCommand)
 
-	//添加命令参数
-	subCommand.StringVar(&commandName, "name", "", "nameing of a sub command")
-	subCommand.StringVar(&commandDesc, "desc", "", "description of a sub command")
-	subCommand.BoolVar(&forceFlag, "f", false, "force to create file if exist")
+	//设置解析参数前处理
+	subCommand.SetBeforeParse(BeforeParseCreateCommand)
 
 	//添加子命令
 	AddCommand(subCommand)
+}
+
+//执行之前的处理，比如重新设置参数默认值
+func BeforeParseCreateCommand(sub *SubCommand) error {
+	/*
+		//取消验证数据库名
+		sub.SetFlagValue("check_database", "false")
+		//*/
+
+	//*
+	//取消验证表名
+	sub.SetFlagValue("check_table", "false")
+	//*/
+
+	//添加命令参数
+	sub.StringVar(&commandName, "name", "", "nameing of a sub command")
+	sub.StringVar(&commandDesc, "desc", "", "description of a sub command")
+	sub.BoolVar(&forceFlag, "f", false, "force to create file if exist")
+
+	return nil
 }
 
 //创建一个子命令模板
@@ -45,20 +64,10 @@ func RunCreateCommand() error {
 		return fmt.Errorf("please set the name of a sub command, -name")
 	}
 
-	curPath, err := os.Getwd()
+	//不存在，则创建目录
+	commandPath, err := utils.GenFolder("command")
 	if err != nil {
 		return err
-	}
-
-	//不存在，则创建目录
-	commandPath := filepath.Join(curPath, "command")
-	_, err = os.Stat(commandPath)
-	if err != nil {
-		if !os.IsExist(err) {
-			if err = os.Mkdir(commandPath, os.ModePerm); err != nil {
-				return err
-			}
-		}
 	}
 
 	//生成文件

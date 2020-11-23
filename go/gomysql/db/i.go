@@ -27,7 +27,7 @@ type Idb interface {
 	Tables() ([]string, error)
 
 	//根据数据名及表明，获取表结构信息
-	Fields(string, string) ([]TableColumn, error)
+	Fields(string, string) (TableColumnSice, error)
 
 	//根据表名，获取表结构信息
 	Columns(string) ([]*sql.ColumnType, error)

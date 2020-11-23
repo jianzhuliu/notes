@@ -3,14 +3,19 @@ package command
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"time"
 
 	"gomysql/conf"
 	"gomysql/db"
+	"gomysql/utils"
 )
 
 var (
-	all bool   //是否处理所有表
-	out string //保存目录
+	all bool //是否处理所有表
+	out bool //生成文件
 )
 
 func init() {
@@ -31,7 +36,7 @@ func init() {
 func BeforeParseTostruct(sub *SubCommand) error {
 	//添加自定义参数
 	sub.BoolVar(&all, "all", false, "format all table to struct")
-	sub.StringVar(&out, "out", "", "set the outpath")
+	sub.BoolVar(&out, "out", false, "gen to file, the default folder is models")
 
 	/*
 		//取消验证数据库名
@@ -79,7 +84,23 @@ func RunTostruct() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println("====================\n", str)
+
+		if out {
+			//生成文件
+			err = genModelFile(conf.V_db_database, conf.V_db_table, str)
+			if err != nil {
+				return err
+			}
+
+			err = genCmdFile(conf.V_db_table)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("table %s has finished \n", conf.V_db_table)
+		} else {
+			fmt.Println("====================\n", str)
+		}
 
 		return nil
 	} else {
@@ -118,9 +139,82 @@ func RunTostruct() error {
 				return err
 			}
 
-			fmt.Println(str)
+			if out {
+				//生成文件
+				err = genModelFile(conf.V_db_database, tblname, str)
+				if err != nil {
+					return err
+				}
+
+				err = genCmdFile(tblname)
+				if err != nil {
+					return err
+				}
+
+				fmt.Printf("table %s has finished \n", tblname)
+			} else {
+				fmt.Println(str)
+			}
 		}
 
 		return nil
 	}
+}
+
+//生成文件
+func genModelFile(database, tblname, str string) error {
+	modelsPath, err := utils.GenFolder("models")
+	if err != nil {
+		return err
+	}
+
+	modelsFileName := fmt.Sprintf("%s_%s.go", database, tblname)
+	modelsFile := filepath.Join(modelsPath, modelsFileName)
+	err = ioutil.WriteFile(modelsFile, []byte(str), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//表测试入口
+const tmplCmdModel = `/*
+%[1]s 表测试,生成日期 "%[2]s"
+*/
+package main
+
+import (
+	"fmt"
+	"gomysql/models"
+)
+
+func main() {
+	model := models.NewT%[1]s()
+	
+	fmt.Println("model:")
+	fmt.Println(model)
+	fmt.Println("columns:",model.Columns())
+	fmt.Println("current time:",model.CurrentTime())
+}`
+
+//生成 cmd file
+func genCmdFile(tblname string) error {
+	cmdPath, err := utils.GenFolder("cmd")
+	if err != nil {
+		return err
+	}
+
+	cmdFileName := fmt.Sprintf("table_%s.go", tblname)
+	cmdFile := filepath.Join(cmdPath, cmdFileName)
+
+	created := time.Now().Format(conf.C_time_layout)
+	content := fmt.Sprintf(tmplCmdModel, tblname, created)
+	err = ioutil.WriteFile(cmdFile, []byte(content), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }

@@ -42,3 +42,16 @@ go run main.go databases
 ```bash 
 go run main.go tables -database information_schema
 ```
+
+> - 创建子命令，生成文件在目录 command 下
+
+```bash 
+go run main.go command -name demo -desc="demo description"
+```
+
+> - 根据数据库表，生成 struct 结构，生成目录在 models 下，文件名规则，数据库名 + 表名 + .go, 比如 gomysql_columns.go
+> - 并在 cmd 目录下生成对应测试文件，格式 table_ + 表名 + .go, 比如  table_columns.go
+
+```bash 
+go run main.go command -name demo -desc="demo description"
+```
