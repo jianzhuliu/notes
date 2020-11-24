@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -30,4 +32,17 @@ func GenFolder(folder string) (string, error) {
 	}
 
 	return folderPath, nil
+}
+
+//出错时退出
+func ExitOnError(format string, args ...interface{}) {
+	logger := log.New(os.Stderr, "[exit_on_error]", log.LstdFlags|log.Lshortfile)
+	logger.Output(2, fmt.Sprintf(format, args...))
+	os.Exit(2)
+}
+
+//日志记录
+func DoLog(format string, args ...interface{}) {
+	logger := log.New(os.Stdout, "[do_log]", log.LstdFlags|log.Lshortfile)
+	logger.Output(2, fmt.Sprintf(format, args...))
 }

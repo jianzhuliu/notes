@@ -24,6 +24,18 @@ func GetMysqlIdb() (Idb, error) {
 	return Idb, nil
 }
 
+//获取mysql 对应原生 DB 对象
+func GetMysqlDb() (*sql.DB, error) {
+	Idb, err := GetMysqlIdb()
+	if err != nil {
+		return nil, err
+	}
+
+	db := Idb.Db()
+
+	return db, nil
+}
+
 //mysql 对象
 type DbMysql struct {
 	DbBase

@@ -19,6 +19,18 @@ func main() {
 }
 ```
 
+> - windows 下手动开启mysql, 对应配置 conf.C_win_cmd_start_mysql
+
+```bash 
+go run main.go start
+```
+
+> - windows 下手动关闭mysql, 对应配置 conf.C_win_cmd_stop_mysql
+
+```bash 
+go run main.go stop
+```
+
 > - 显示所有支持的命令列表
 
 ```bash 

@@ -92,6 +92,11 @@ func RunTostruct() error {
 				return err
 			}
 
+			err = genTbaseFile()
+			if err != nil {
+				return err
+			}
+
 			err = genCmdFile(conf.V_db_table)
 			if err != nil {
 				return err
@@ -157,6 +162,13 @@ func RunTostruct() error {
 			}
 		}
 
+		if out {
+			err = genTbaseFile()
+			if err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}
 }
@@ -178,6 +190,24 @@ func genModelFile(database, tblname, str string) error {
 	return nil
 }
 
+//生成公用文件
+func genTbaseFile() error {
+	cmdPath, err := utils.GenFolder("models")
+	if err != nil {
+		return err
+	}
+
+	cmdFile := filepath.Join(cmdPath, "tbase.go")
+
+	content := db.GenTbase()
+	err = ioutil.WriteFile(cmdFile, []byte(content), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 //表测试入口
 const tmplCmdModel = `/*
 %[1]s 表测试,生成日期 "%[2]s"
@@ -187,15 +217,42 @@ package main
 import (
 	"fmt"
 	"gomysql/models"
+	"gomysql/db"
+	"gomysql/log"
 )
 
 func main() {
-	model := models.NewT%[1]s()
+	db, err := db.GetMysqlDb()
 	
-	fmt.Println("model:")
-	fmt.Println(model)
-	fmt.Println("columns:",model.Columns())
-	fmt.Println("current time:",model.CurrentTime())
+	if err != nil {
+		log.ExitOnError("db.GetMysqlDb() | err=%v", err)
+	}
+	
+	modelObj := models.NewTobj_%[1]s(db)
+
+	fmt.Println(modelObj.Informaton())
+	fmt.Println("columns:", modelObj.Columns())
+	fmt.Println("current time:", modelObj.CurrentTime())
+	
+	fmt.Println("=============one=================")
+	one, err := modelObj.Where("status =?", 1).One()
+	if err != nil {
+		log.ExitOnError("modelObj.One() | err=%v", err)
+	}
+	
+	oneData, ok := modelObj.Interface(one)
+	fmt.Println(ok, oneData.Id, oneData)
+	
+	all,err := modelObj.Where("status =?", 1).OrderBy("id desc").Limit(2).All()
+	if err != nil {
+		log.ExitOnError("modelObj.All() | err=%v", err)
+	}
+	
+	fmt.Println("=============all=================")
+	for _, data := range all {
+		realData, ok := modelObj.Interface(data)
+		fmt.Println(ok, realData.Id, realData)
+	}
 }`
 
 //生成 cmd file
