@@ -65,5 +65,6 @@ go run main.go command -name demo -desc="demo description"
 > - 并在 cmd 目录下生成对应测试文件，格式 table_ + 表名 + .go, 比如  table_columns.go
 
 ```bash 
-go run main.go command -name demo -desc="demo description"
+go run main.go tostruct -table=columns -out
+go run main.go tostruct -all -out
 ```

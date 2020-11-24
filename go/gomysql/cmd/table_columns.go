@@ -1,5 +1,5 @@
 /*
-columns 表测试,生成日期 "2020-11-24 18:23:36"
+columns 表测试,生成日期 "2020-11-24 18:34:43"
 */
 package main
 
@@ -26,7 +26,7 @@ func main() {
 	fmt.Println("=============one=================")
 	one, err := modelObj.Where("status =?", 1).One()
 	if err != nil {
-		log.ExitOnError("modelObj.One() | err=2020-11-24 18:23:36", err)
+		log.ExitOnError("modelObj.One() | err=2020-11-24 18:34:43", err)
 	}
 
 	oneData, ok := modelObj.Interface(one)

@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"context"
+	"os/exec"
 
 	"gomysql/conf"
 	"gomysql/db"
@@ -173,6 +175,17 @@ func RunTostruct() error {
 	}
 }
 
+//格式化
+func gofmt(file string) {
+	//上下文信息
+	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
+	defer cancel()
+
+	//执行格式化命令
+	_ = exec.CommandContext(ctx,"go","fmt",file).Run()
+	return
+}
+
 //生成文件
 func genModelFile(database, tblname, str string) error {
 	modelsPath, err := utils.GenFolder("models")
@@ -186,6 +199,8 @@ func genModelFile(database, tblname, str string) error {
 	if err != nil {
 		return err
 	}
+	
+	gofmt(modelsFile)
 
 	return nil
 }
@@ -197,13 +212,15 @@ func genTbaseFile() error {
 		return err
 	}
 
-	cmdFile := filepath.Join(cmdPath, "tbase.go")
+	file := filepath.Join(cmdPath, "tbase.go")
 
 	content := db.GenTbase()
-	err = ioutil.WriteFile(cmdFile, []byte(content), os.ModePerm)
+	err = ioutil.WriteFile(file, []byte(content), os.ModePerm)
 	if err != nil {
 		return err
 	}
+	
+	gofmt(file)
 
 	return nil
 }
@@ -271,6 +288,8 @@ func genCmdFile(tblname string) error {
 	if err != nil {
 		return err
 	}
+	
+	gofmt(cmdFile)
 
 	return nil
 
