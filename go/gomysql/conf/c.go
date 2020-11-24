@@ -14,4 +14,8 @@ const (
 
 	//时间格式化配置
 	C_time_layout string = "2006-01-02 15:04:05"
+
+	//windows 下 开启及关闭 mysql 命令
+	C_win_cmd_start_mysql = `D:\program\mysql\bin\mysqld --defaults-file=D:\program\mysql_config\my.ini --console`
+	C_win_cmd_stop_mysql  = `D:\program\mysql\bin\mysqladmin -u root shutdown`
 )

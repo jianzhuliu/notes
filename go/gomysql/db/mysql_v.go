@@ -64,7 +64,7 @@ var UnsignedTypeMysqlToKind = map[string]string{
 	"doub": "float64",
 
 	//int,tinyint,smallint,mediumint,bigint
-	"int":  "uint32",
+	"int":  "uint",
 	"tiny": "uint8",
 	"smal": "uint16",
 	"medi": "uint32",

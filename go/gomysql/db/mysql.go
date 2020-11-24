@@ -6,16 +6,22 @@ import (
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
+	"gomysql/conf"
 )
 
 //添加直接获取mysql对应 Idb
-func GetMysqlDb() Idb {
+func GetMysqlIdb() (Idb, error) {
 	Idb, ok := GetDb(DriverMysql)
 	if !ok {
-		return nil
+		return nil, fmt.Errorf("mysql register fail")
 	}
 
-	return Idb
+	err := Idb.Open(conf.V_default_mysql_dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	return Idb, nil
 }
 
 //mysql 对象

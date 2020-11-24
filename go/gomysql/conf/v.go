@@ -3,6 +3,10 @@
 */
 package conf
 
+import (
+	"fmt"
+)
+
 var (
 	//参数配置
 	V_db_host     string
@@ -19,3 +23,7 @@ var (
 	V_helpFlag bool
 	V_version  bool
 )
+
+//默认mysql dsn
+var V_default_mysql_dsn string = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local&charset=utf8",
+	C_db_user, C_db_passwd, C_db_host, C_db_port, C_db_database)

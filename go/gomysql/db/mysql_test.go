@@ -1,29 +1,17 @@
 package db
 
 import (
-	"fmt"
 	"strings"
 	"testing"
-
-	"gomysql/conf"
 )
-
-//测试使用mysql默认配置
-var test_dsn string = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local&charset=utf8",
-	conf.C_db_user, conf.C_db_passwd, conf.C_db_host, conf.C_db_port, conf.C_db_database)
 
 //获取一个db接口实现对象
 func openMysql(t *testing.T) Idb {
 	t.Helper()
 
-	Idb, ok := GetDb(DriverMysql)
-	if !ok {
-		t.Fatal("mysql register fail")
-	}
-
-	err := Idb.Open(test_dsn)
+	Idb, err := GetMysqlIdb()
 	if err != nil {
-		t.Fatal("fail to open mysql", err)
+		t.Fatal(err)
 	}
 
 	return Idb
@@ -78,21 +66,21 @@ type mysqlTypeTest struct {
 
 //表类型测试数据
 var mysqlTypeTests = []mysqlTypeTest{
-	{TableColumn{"name1", "int(11)", "int"}, "int", true},
-	{TableColumn{"name2", "int(11) unsigned", "int"}, "uint", true},
-	{TableColumn{"name3", "int", "int"}, "int", true},
-	{TableColumn{"name4", "int unsigned", "int"}, "uint", true},
+	{TableColumn{ColumnName: "name1", ColumnType: "int(11)", DataType: "int"}, "int", true},
+	{TableColumn{ColumnName: "name2", ColumnType: "int(11) unsigned", DataType: "int"}, "uint", true},
+	{TableColumn{ColumnName: "name3", ColumnType: "int", DataType: "int"}, "int", true},
+	{TableColumn{ColumnName: "name4", ColumnType: "int unsigned", DataType: "int"}, "uint", true},
 
-	{TableColumn{"name5", "char", "char"}, "string", true},
-	{TableColumn{"name6", "char(10)", "char"}, "string", true},
+	{TableColumn{ColumnName: "name5", ColumnType: "char", DataType: "char"}, "string", true},
+	{TableColumn{ColumnName: "name6", ColumnType: "char(10)", DataType: "char"}, "string", true},
 
-	{TableColumn{"name7", "varchar(20)", "varchar"}, "string", true},
-	{TableColumn{"name8", "char(10)", "char"}, "string", true},
+	{TableColumn{ColumnName: "name7", ColumnType: "varchar(20)", DataType: "varchar"}, "string", true},
+	{TableColumn{ColumnName: "name8", ColumnType: "char(10)", DataType: "char"}, "string", true},
 
-	{TableColumn{"name9", "timestamp", "timestamp"}, "time.Time", true},
+	{TableColumn{ColumnName: "name9", ColumnType: "timestamp", DataType: "timestamp"}, "time.Time", true},
 
-	{TableColumn{"name10", "float", "float"}, "float32", true},
-	{TableColumn{"name11", "float(10,2)", "float"}, "float32", true},
+	{TableColumn{ColumnName: "name10", ColumnType: "float", DataType: "float"}, "float32", true},
+	{TableColumn{ColumnName: "name11", ColumnType: "float(10,2)", DataType: "float"}, "float32", true},
 }
 
 //测试表类型映射
@@ -101,7 +89,7 @@ func TestKindOfDataType(t *testing.T) {
 	for _, info := range mysqlTypeTests {
 		out, ok := Idb.KindOfDataType(info.tableColumn)
 		if out != info.expect || ok != info.ok {
-			t.Fatalf("%s expect %q, %t, but got %q, %t. tableColumn:%+v", info.tableColumn.ColumnName, info.expect, info.ok, out, ok, info.tableColumn)
+			t.Fatalf("%s expect %q, %t, but got %q, %t ============= ColumnType:%s, DataType:%s", info.tableColumn.ColumnName, info.expect, info.ok, out, ok, info.tableColumn.ColumnType, info.tableColumn.DataType)
 		}
 	}
 }
