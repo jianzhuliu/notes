@@ -55,6 +55,7 @@ func RunStop() error {
 	}
 
 	cmd := exec.Command(commandName, args...)
+	fmt.Printf("going to exec %q \n", cmd.String())
 	stdoutStderr, err := cmd.CombinedOutput()
 	if err != nil {
 		return err

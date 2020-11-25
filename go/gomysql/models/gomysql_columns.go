@@ -1,5 +1,5 @@
 /*
-columns 表结构生成时间 "2020-11-24 18:34:43"
+columns 表结构生成时间 "2020-11-25 12:29:22"
 请勿修改，如需新增方法，请另外同包同目录下创建文件处理
 */
 package models
@@ -79,7 +79,7 @@ func (t *Tobj_columns) TableName() string {
 }
 
 //所有表字段,按数据库表字段顺序排列
-func (t *Tobj_columns) Columns() []string {
+func (t *Tobj_columns) ColumnList() []string {
 	return []string{
 		"id",
 		"name",
@@ -92,8 +92,21 @@ func (t *Tobj_columns) Columns() []string {
 }
 
 //所有表字段,按数据库表字段顺序排列
-func (t *Tobj_columns) Fields() string {
+func (t *Tobj_columns) Columns() string {
 	return "id,name,phone,gender,status,info,created"
+}
+
+//结构体字段与表字段对应关系
+func (t *Tobj_columns) FieldToColumn() map[string]string {
+	return map[string]string{
+		"Status":  "status",
+		"Id":      "id",
+		"Name":    "name",
+		"Phone":   "phone",
+		"Gender":  "gender",
+		"Info":    "info",
+		"Created": "created",
+	}
 }
 
 //打印表信息
@@ -121,10 +134,10 @@ func (t *Tobj_columns) CurrentTime() string {
 //获取满足条件下，所有记录
 func (t *Tobj_columns) All() ([]interface{}, error) {
 	condStr, args := t.Build()
-	var sql = fmt.Sprintf("select %s from %s %s", t.Fields(), t.TableName(), condStr)
-	t.Log("sql:%s,args:%v", sql, args)
+	var sql = fmt.Sprintf("select %s from %s %s", t.Columns(), t.TableName(), condStr)
+	t.Log("All|sql:%s,args:%v", sql, args)
 	defer t.Reset()
-	rows, err := t.db.Query(sql, args...)
+	rows, err := t.Db().Query(sql, args...)
 
 	if err != nil {
 		return nil, err

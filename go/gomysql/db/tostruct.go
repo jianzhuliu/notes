@@ -76,7 +76,7 @@ func (t *Tobj_{{.tblname}}) TableName() string {
 }
 
 //所有表字段,按数据库表字段顺序排列
-func (t *Tobj_{{.tblname}}) Columns() []string{
+func (t *Tobj_{{.tblname}}) ColumnList() []string{
 	return []string{
 	{{- range $field := .fields}}
 	"{{$field}}",
@@ -85,8 +85,17 @@ func (t *Tobj_{{.tblname}}) Columns() []string{
 }
 
 //所有表字段,按数据库表字段顺序排列
-func (t *Tobj_{{.tblname}}) Fields() string {
+func (t *Tobj_{{.tblname}}) Columns() string {
 	return "{{Join .fields "," }}"
+}
+
+//结构体字段与表字段对应关系
+func (t *Tobj_{{.tblname}}) FieldToColumn() map[string]string {
+	return map[string]string{
+	{{- range $column := .tableColumns}}
+	"{{$column.ColumnName|Title}}":"{{$column.ColumnName}}",
+	{{- end}}
+	}
 }
 
 //打印表信息
@@ -110,10 +119,10 @@ func (t *Tobj_{{.tblname}}) CurrentTime() string{
 //获取满足条件下，所有记录
 func (t *Tobj_{{.tblname}}) All() ([]interface{},error) {
 	condStr,args := t.Build()
-	var sql = fmt.Sprintf("select %s from %s %s", t.Fields(), t.TableName(), condStr)
-	t.Log("sql:%s,args:%v",sql, args)
+	var sql = fmt.Sprintf("select %s from %s %s", t.Columns(), t.TableName(), condStr)
+	t.Log("All|sql:%s,args:%v",sql, args)
 	defer t.Reset()
-	rows, err := t.db.Query(sql, args...)
+	rows, err := t.Db().Query(sql, args...)
 	
 	if err != nil {
 		return nil, err

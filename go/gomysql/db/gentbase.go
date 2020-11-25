@@ -26,17 +26,23 @@ import (
 
 const (
 	C_time_format_layout = "%[2]s"
+	C_primary_key = "id" 	//主键标识
 )
 
 //所有表处理对象需实现的接口
 type Isub interface{
-	TableName() string  //指定表名
-	Columns() []string	//字段列表，字符串切片类型
-	Fields() string  	//对应字段列表
+	Db() *sql.DB
+	TableName() string  	//指定表名
+	ColumnList() []string	//字段列表，字符串切片类型
+	Columns() string  		//对应字段列表
+	FieldToColumn() map[string]string	//结构体字段与表字段对应关系
 	Informaton() string 	//表信息描述
 	CurrentTime() string	//获取当前时间，主要为兼容 time.Time 类型，需要导入 time 包
 	One() (interface{},error)			//查询单个记录
 	All() ([]interface{},error) 		//查询所有
+	Insert(map[string]interface{}) (int64, error) 	//插入数据,返回插入后id
+	Update(map[string]interface{}) (int64, error) 	//更新数据,返回更新记录数
+	Delete() (int64, error) 	//删除数据,返回受影响行数及删除的行数
 	
 	Where(desc string, args ...interface{}) Isub 	//链式操作 where 查询条件
 	OrderBy(values ...string) Isub		//链式操作 where 查询条件
@@ -62,7 +68,7 @@ func NewTbase(db *sql.DB) *Tbase{
 }
 
 //获取 db 对象
-func (t *Tbase) GetDb() *sql.DB {
+func (t *Tbase) Db() *sql.DB {
 	return t.db
 }
 
@@ -119,7 +125,107 @@ func (t *Tbase) One() (interface{},error) {
 		return nil, err
 	}
 	
+	//没有数据
+	if len(result) == 0 {
+		return nil,nil
+	}
+	
 	return result[0], nil
+}
+
+//删除记录
+func (t *Tbase) Delete() (int64,error) {
+	condStr,args := t.Build()
+	var sql = fmt.Sprintf("delete from %%s %%s", t.sub.TableName(), condStr)
+	t.Log("Delete|sql:%%s,args:%%v",sql, args)
+	defer t.Reset()
+	result, err := t.Db().Exec(sql, args...)
+	
+	if err != nil {
+		return 0, err
+	}
+	
+	return result.RowsAffected()
+}
+
+//插入
+func (t *Tbase) Insert(values map[string]interface{}) (int64, error){
+	//简单参数校验
+	if len(values) == 0 {
+		return 0, fmt.Errorf("values is empty")
+	}
+	
+	_ = t.Reset()
+	defer t.Reset()
+	
+	//构造sql 及参数
+	fieldToColumn := t.sub.FieldToColumn()
+	for k, v := range values{
+		column, ok := fieldToColumn[k];
+		if !ok {
+			return 0, fmt.Errorf("key %%s is not table column",k)
+		}
+		
+		if column != C_primary_key {
+			t.conds = append(t.conds, column)
+			t.condArgs = append(t.condArgs, v)
+		}
+	}
+	
+	if len(t.conds) == 0 {
+		return 0, fmt.Errorf("invalid values")
+	}
+	
+	condStr := strings.Join(t.conds, ",")
+	args := t.condArgs
+	var sql = fmt.Sprintf("insert into %%s(%%s) values (%%s)", t.sub.TableName(), condStr,genBindVars(len(t.conds)))
+	t.Log("Insert|sql:%%s,args:%%v",sql, args)
+	result, err := t.Db().Exec(sql, args...)
+	
+	if err != nil {
+		return 0, err
+	}
+	
+	return result.LastInsertId()
+}
+
+//更新
+func (t *Tbase) Update(values map[string]interface{}) (int64, error){
+	//简单参数校验
+	if len(values) == 0 {
+		return 0, fmt.Errorf("values is empty")
+	}
+	
+	defer t.Reset()
+	
+	columnList := []string{}
+	columnValues := []interface{}{}
+	
+	//构造sql 及参数
+	fieldToColumn := t.sub.FieldToColumn()
+	for k, v := range values{
+		column, ok := fieldToColumn[k];
+		if !ok {
+			return 0, fmt.Errorf("key %%s is not table column",k)
+		}
+		
+		columnList = append(columnList, fmt.Sprintf("%%s = ?", column))
+		columnValues = append(columnValues, v)
+	}
+
+	condStr,condArgs := t.Build()
+	columns := strings.Join(columnList, ",")
+	
+	args := append(columnValues, condArgs...)
+	var sql = fmt.Sprintf("update %%s set %%s %%s", t.sub.TableName(), columns, condStr)
+	t.Log("Update|sql:%%s,args:%%v",sql, args)
+	result, err := t.Db().Exec(sql, args...)
+	
+	if err != nil {
+		return 0, err
+	}
+	
+	return result.RowsAffected()
 }
 
 //记录日志

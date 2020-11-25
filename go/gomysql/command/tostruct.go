@@ -2,13 +2,13 @@
 package command
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
-	"context"
-	"os/exec"
 
 	"gomysql/conf"
 	"gomysql/db"
@@ -178,11 +178,11 @@ func RunTostruct() error {
 //格式化
 func gofmt(file string) {
 	//上下文信息
-	ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	//执行格式化命令
-	_ = exec.CommandContext(ctx,"go","fmt",file).Run()
+	_ = exec.CommandContext(ctx, "go", "fmt", file).Run()
 	return
 }
 
@@ -199,7 +199,7 @@ func genModelFile(database, tblname, str string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	gofmt(modelsFile)
 
 	return nil
@@ -219,7 +219,7 @@ func genTbaseFile() error {
 	if err != nil {
 		return err
 	}
-	
+
 	gofmt(file)
 
 	return nil
@@ -233,6 +233,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	
 	"gomysql/models"
 	"gomysql/db"
 	"gomysql/log"
@@ -242,7 +244,7 @@ func main() {
 	db, err := db.GetMysqlDb()
 	
 	if err != nil {
-		log.ExitOnError("db.GetMysqlDb() | err=%v", err)
+		log.ExitOnError("db.GetMysqlDb() | err=%%v", err)
 	}
 	
 	modelObj := models.NewTobj_%[1]s(db)
@@ -251,26 +253,148 @@ func main() {
 	fmt.Println("columns:", modelObj.Columns())
 	fmt.Println("current time:", modelObj.CurrentTime())
 	
+	all(modelObj)
+	deleteAll(modelObj)
+	
+	//插入测试数据
+	var lastInsertId int64
+	var values map[string]interface{}
+	
+	for i:=1; i<10; i++ {
+		values = map[string]interface{}{
+			"Status":i%%2,
+			"Name":"name_insert_" +  strconv.Itoa(i),
+			"Phone": "129833444" + strconv.Itoa(i),
+			"Info":"info_insert" +  strconv.Itoa(i),
+		}
+		lastInsertId = insert(modelObj, values)
+	}
+	
+	all(modelObj)
+	
+	if lastInsertId > 0 {
+		values["Info"] = "update_info"
+		update(modelObj, lastInsertId, values)
+	}
+	
+	all(modelObj)
+	
+	oneData := one(modelObj)
+	
+	delete(modelObj, oneData.Id)
+	_ = one(modelObj)
+
+	all(modelObj)
+}
+
+//查询一条记录
+func one(modelObj *models.Tobj_%[1]s) models.T_%[1]s {
 	fmt.Println("=============one=================")
 	one, err := modelObj.Where("status =?", 1).One()
 	if err != nil {
-		log.ExitOnError("modelObj.One() | err=%v", err)
+		log.ExitOnError("modelObj.One() | err=%%v", err)
 	}
 	
+	if one == nil {
+		log.Info("one|empty")
+		return models.T_%[1]s{}
+	}
+
 	oneData, ok := modelObj.Interface(one)
 	fmt.Println(ok, oneData.Id, oneData)
-	
-	all,err := modelObj.Where("status =?", 1).OrderBy("id desc").Limit(2).All()
+	return oneData
+}
+
+//查看所有记录
+func all(modelObj *models.Tobj_%[1]s){
+	fmt.Println("=============all=================")
+
+	all, err := modelObj.Where("status =?", 1).OrderBy("id desc").Limit(10).All()
 	if err != nil {
-		log.ExitOnError("modelObj.All() | err=%v", err)
+		log.ExitOnError("modelObj.All() | err=%%v", err)
+	}
+
+	if all== nil || len(all) == 0 {
+		log.Info("all|empty")
+		return 
 	}
 	
-	fmt.Println("=============all=================")
 	for _, data := range all {
 		realData, ok := modelObj.Interface(data)
 		fmt.Println(ok, realData.Id, realData)
 	}
-}`
+}
+
+//删除所有
+func deleteAll(modelObj *models.Tobj_%[1]s) {
+	fmt.Println("=============deleteAll=================")
+	
+	rowsAffected, err := modelObj.Delete()
+	if err != nil {
+		log.ExitOnError("modelObj.Delete() | err=%%v", err)
+	}
+	
+	fmt.Printf("deleteAll|rowsAffected= %%d \n", rowsAffected)
+}
+
+//删除
+func delete(modelObj *models.Tobj_%[1]s, id uint) {
+	fmt.Println("=============delete=================")
+	
+	if id == 0 {
+		log.Info("delete| id == 0")
+		return
+	}
+	
+	rowsAffected, err := modelObj.Where("id=?", id).Delete()
+	if err != nil {
+		log.ExitOnError("modelObj.Delete() | err=%%v", err)
+	}
+	
+	fmt.Printf("delete|rowsAffected= %%d \n", rowsAffected)
+}
+
+//插入
+func insert(modelObj *models.Tobj_%[1]s, values map[string]interface{}) int64 {
+	fmt.Println("=============insert=================")
+	if len(values) == 0 {
+		log.Info("insert| values is empty")
+		return 0
+	}
+	
+	lastInsertId, err := modelObj.Insert(values)
+	if err != nil {
+		log.ExitOnError("modelObj.Insert() | err=%%v", err)
+	}
+	
+	fmt.Printf("insert|lastInsertId= %%d \n", lastInsertId)
+	
+	return lastInsertId
+}
+
+//更新
+func update(modelObj *models.Tobj_%[1]s, id int64,values map[string]interface{}) {
+	fmt.Println("=============update=================")
+	
+	if id == 0 {
+		log.Info("update| id == 0")
+		return
+	}
+	
+	if len(values) == 0 {
+		log.Info("update| values is empty")
+		return
+	}
+	
+	rowsAffected, err := modelObj.Where("id=?", id).Update(values)
+	if err != nil {
+		log.ExitOnError("modelObj.Update() | err=%%v", err)
+	}
+	
+	fmt.Printf("update|rowsAffected= %%d \n", rowsAffected)
+}
+
+`
 
 //生成 cmd file
 func genCmdFile(tblname string) error {
@@ -288,7 +412,7 @@ func genCmdFile(tblname string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	gofmt(cmdFile)
 
 	return nil
