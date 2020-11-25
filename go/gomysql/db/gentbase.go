@@ -40,11 +40,13 @@ type Isub interface{
 	CurrentTime() string	//获取当前时间，主要为兼容 time.Time 类型，需要导入 time 包
 	One() (interface{},error)			//查询单个记录
 	All() ([]interface{},error) 		//查询所有
-	Insert(map[string]interface{}) (int64, error) 	//插入数据,返回插入后id
+	Insert(map[string]interface{}, ...interface{}) (int64, error) 	//插入数据,返回插入后id,后支持布尔型参数，是否不忽略主键字段，默认忽略
 	Update(map[string]interface{}) (int64, error) 	//更新数据,返回更新记录数
 	Delete() (int64, error) 	//删除数据,返回受影响行数及删除的行数
+	Truncate() error		//重置表
+	CreateTableSql() (string, error) 	//查看创建表的 sql 语句
 	
-	Where(desc string, args ...interface{}) Isub 	//链式操作 where 查询条件
+	Where(string, ...interface{}) Isub 	//链式操作 where 查询条件
 	OrderBy(values ...string) Isub		//链式操作 where 查询条件
 	Limit(values ...interface{}) Isub	//链式操作 where 查询条件
 	Build() (string,[]interface{})		//构建sql语句及参数
@@ -133,6 +135,21 @@ func (t *Tbase) One() (interface{},error) {
 	return result[0], nil
 }
 
+//查看生成表的 sql 语句
+func (t *Tbase) CreateTableSql() (string, error) {
+	var sql = fmt.Sprintf("show create table %%s", t.sub.TableName())
+	t.Log("CreateTableSql|sql:%%s",sql)
+	row := t.Db().QueryRow(sql)
+	var db_tblname, createSql string
+	if err := row.Scan(&db_tblname, &createSql); err != nil {
+		return "", err
+	}
+	
+	_ = db_tblname
+	
+	return createSql, nil
+}
+
 //删除记录
 func (t *Tbase) Delete() (int64,error) {
 	condStr,args := t.Build()
@@ -148,8 +165,17 @@ func (t *Tbase) Delete() (int64,error) {
 	return result.RowsAffected()
 }
 
-//插入
-func (t *Tbase) Insert(values map[string]interface{}) (int64, error){
+//重置表
+func (t *Tbase) Truncate() (err error) {
+	var sql = fmt.Sprintf("truncate table %%s", t.sub.TableName())
+	t.Log("Truncate|sql:%%s",sql)
+	_, err = t.Db().Exec(sql)
+	
+	return 
+}
+
+//插入，后支持布尔型参数，是否不忽略主键字段，默认忽略
+func (t *Tbase) Insert(values map[string]interface{}, params ...interface{}) (int64, error){
 	//简单参数校验
 	if len(values) == 0 {
 		return 0, fmt.Errorf("values is empty")
@@ -157,6 +183,11 @@ func (t *Tbase) Insert(values map[string]interface{}) (int64, error){
 	
 	_ = t.Reset()
 	defer t.Reset()
+	
+	skipPK := true
+	if len(params) > 0 {
+		if p, ok := params[0].(bool);ok { skipPK = p}
+	}
 	
 	//构造sql 及参数
 	fieldToColumn := t.sub.FieldToColumn()
@@ -166,7 +197,7 @@ func (t *Tbase) Insert(values map[string]interface{}) (int64, error){
 			return 0, fmt.Errorf("key %%s is not table column",k)
 		}
 		
-		if column != C_primary_key {
+		if !skipPK || column != C_primary_key {
 			t.conds = append(t.conds, column)
 			t.condArgs = append(t.condArgs, v)
 		}

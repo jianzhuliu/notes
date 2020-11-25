@@ -1,89 +1,178 @@
 /*
-columns 表测试,生成日期 "2020-11-25 12:29:22"
+columns 表测试,生成日期 "2020-11-25 16:44:20"
 */
 package main
 
 import (
+	"flag"
 	"fmt"
+	"os"
 	"strconv"
+	"time"
 
 	"gomysql/db"
 	"gomysql/log"
 	"gomysql/models"
 )
 
-func main() {
+var modelObj *models.Tobj_columns
+var subCommandFunc map[string]func()
+
+func init() {
 	db, err := db.GetMysqlDb()
 
 	if err != nil {
 		log.ExitOnError("db.GetMysqlDb() | err=%v", err)
 	}
 
-	modelObj := models.NewTobj_columns(db)
+	modelObj = models.NewTobj_columns(db)
+	flag.Usage = usage
 
+	//定义各个子命令，对应处理函数
+	subCommandFunc = make(map[string]func())
+	subCommandFunc["info"] = _info
+	subCommandFunc["truncate"] = _truncate
+	subCommandFunc["insert"] = _insert
+	subCommandFunc["update"] = _update
+	subCommandFunc["delete"] = _delete
+	subCommandFunc["deleteall"] = _deleteall
+	subCommandFunc["all"] = _all
+	subCommandFunc["one"] = _one
+}
+
+//帮助说明函数
+func usage() {
+	fmt.Println("*************************************")
+	fmt.Println("Usage of table_columns:")
+	fmt.Println("info		展示表基本信息")
+	fmt.Println("truncate	重置表")
+	fmt.Println("insert		插入测试数据,后面接插入记录数")
+	fmt.Println("update		更新表记录，后接记录id")
+	fmt.Println("delete		删除表记录，后接记录id")
+	fmt.Println("deleteall	删除表所有记录")
+	fmt.Println("all		查询所有数据,后面接查询记录数")
+	fmt.Println("one		查询一条记录，后接记录id")
+
+	//输出默认参数
+	flag.PrintDefaults()
+
+	os.Exit(0)
+}
+
+func main() {
+	flag.Parse()
+
+	if flag.NArg() == 0 {
+		flag.Usage()
+	}
+
+	cmdName := flag.Arg(0)
+	if fn, ok := subCommandFunc[cmdName]; ok {
+		//计时
+		defer func(beginTime time.Time) {
+			fmt.Println("done -- spend -- %v", time.Since(beginTime))
+		}(time.Now())
+
+		fn()
+	} else {
+		fmt.Printf("command name is not exist, %s \n", cmdName)
+		flag.Usage()
+	}
+}
+
+//基本信息
+func _info() {
+	fmt.Println("==============info====================begin")
+	fmt.Println("current time:", modelObj.CurrentTime())
 	fmt.Println(modelObj.Informaton())
 	fmt.Println("columns:", modelObj.Columns())
-	fmt.Println("current time:", modelObj.CurrentTime())
 
-	all(modelObj)
-	deleteAll(modelObj)
+	createSql, err := modelObj.CreateTableSql()
 
-	//插入测试数据
-	var lastInsertId int64
-	var values map[string]interface{}
+	if err != nil {
+		log.ExitOnError("info|modelObj.CreateTableSql() | err=%v", err)
+	}
 
-	for i := 1; i < 10; i++ {
-		values = map[string]interface{}{
-			"Status": i % 2,
-			"Name":   "name_insert_" + strconv.Itoa(i),
-			"Phone":  "129833444" + strconv.Itoa(i),
-			"Info":   "info_insert" + strconv.Itoa(i),
+	fmt.Println("create table sql:")
+	fmt.Println(createSql)
+
+	fmt.Println("==============info====================end")
+}
+
+//重置表
+func _truncate() {
+	fmt.Println("==============truncate====================begin")
+
+	err := modelObj.Truncate()
+	if err != nil {
+		log.ExitOnError("truncate|modelObj.Truncate() | err=%v", err)
+	}
+
+	fmt.Println("==============truncate====================end")
+}
+
+//删除表记录数据
+func _delete() {
+	fmt.Println("==============delete====================begin")
+
+	if flag.NArg() < 2 {
+		fmt.Println("please input the record id")
+		return
+	}
+
+	id, err := strconv.Atoi(flag.Arg(1))
+	if err != nil {
+		log.ExitOnError("delete| strconv.Atoi() | err=%v", err)
+	}
+
+	fmt.Println("delete| id =", id)
+
+	if id > 0 {
+		rowsAffected, err := modelObj.Where("id=?", id).Delete()
+		if err != nil {
+			log.ExitOnError("delete|modelObj.Delete() | err=%v", err)
 		}
-		lastInsertId = insert(modelObj, values)
+
+		fmt.Printf("delete|rowsAffected= %d \n", rowsAffected)
 	}
 
-	all(modelObj)
-
-	if lastInsertId > 0 {
-		values["Info"] = "update_info"
-		update(modelObj, lastInsertId, values)
-	}
-
-	all(modelObj)
-
-	oneData := one(modelObj)
-
-	delete(modelObj, oneData.Id)
-	_ = one(modelObj)
-
-	all(modelObj)
+	fmt.Println("==============delete====================end")
 }
 
-//查询一条记录
-func one(modelObj *models.Tobj_columns) models.T_columns {
-	fmt.Println("=============one=================")
-	one, err := modelObj.Where("status =?", 1).One()
+//删除表所有记录
+func _deleteall() {
+	fmt.Println("==============deleteall====================begin")
+
+	rowsAffected, err := modelObj.Delete()
 	if err != nil {
-		log.ExitOnError("modelObj.One() | err=%v", err)
+		log.ExitOnError("deleteAll|modelObj.Delete() | err=%v", err)
 	}
 
-	if one == nil {
-		log.Info("one|empty")
-		return models.T_columns{}
-	}
+	fmt.Printf("deleteAll|rowsAffected= %d \n", rowsAffected)
 
-	oneData, ok := modelObj.Interface(one)
-	fmt.Println(ok, oneData.Id, oneData)
-	return oneData
+	fmt.Println("==============deleteAll====================end")
 }
 
-//查看所有记录
-func all(modelObj *models.Tobj_columns) {
-	fmt.Println("=============all=================")
+//查询所有数据
+func _all() {
+	fmt.Println("==============all====================begin")
 
-	all, err := modelObj.Where("status =?", 1).OrderBy("id desc").Limit(10).All()
+	maxNum := 10
+
+	if flag.NArg() > 1 {
+		tmpNum, err := strconv.Atoi(flag.Arg(1))
+		if err != nil {
+			log.ExitOnError("all| strconv.Atoi() | err=%v", err)
+		}
+
+		maxNum = tmpNum
+	}
+
+	fmt.Println("insert| maxNum =", maxNum)
+
+	all, err := modelObj.Limit(maxNum).All()
 	if err != nil {
-		log.ExitOnError("modelObj.All() | err=%v", err)
+		log.ExitOnError("all|modelObj.All() | err=%v", err)
 	}
 
 	if all == nil || len(all) == 0 {
@@ -93,75 +182,120 @@ func all(modelObj *models.Tobj_columns) {
 
 	for _, data := range all {
 		realData, ok := modelObj.Interface(data)
-		fmt.Println(ok, realData.Id, realData)
+		if ok {
+			fmt.Println(realData)
+		}
 	}
+
+	fmt.Println("==============all====================end")
 }
 
-//删除所有
-func deleteAll(modelObj *models.Tobj_columns) {
-	fmt.Println("=============deleteAll=================")
+//查询一条记录
+func _one() {
+	fmt.Println("==============one====================begin")
 
-	rowsAffected, err := modelObj.Delete()
+	id := 0
+	if flag.NArg() > 1 {
+		realId, err := strconv.Atoi(flag.Arg(1))
+		if err != nil {
+			log.ExitOnError("one| strconv.Atoi() | err=%v", err)
+		}
+
+		id = realId
+	}
+
+	fmt.Println("one| id =", id)
+
+	one, err := fetchOne(id)
 	if err != nil {
-		log.ExitOnError("modelObj.Delete() | err=%v", err)
+		log.ExitOnError("one|modelObj.One() | err=%v", err)
 	}
 
-	fmt.Printf("deleteAll|rowsAffected= %d \n", rowsAffected)
-}
-
-//删除
-func delete(modelObj *models.Tobj_columns, id uint) {
-	fmt.Println("=============delete=================")
-
-	if id == 0 {
-		log.Info("delete| id == 0")
+	if one == nil {
+		log.Info("one|empty")
 		return
 	}
 
-	rowsAffected, err := modelObj.Where("id=?", id).Delete()
-	if err != nil {
-		log.ExitOnError("modelObj.Delete() | err=%v", err)
-	}
+	oneData, _ := modelObj.Interface(one)
+	fmt.Println(oneData)
 
-	fmt.Printf("delete|rowsAffected= %d \n", rowsAffected)
+	fmt.Println("==============one====================end")
 }
 
-//插入
-func insert(modelObj *models.Tobj_columns, values map[string]interface{}) int64 {
-	fmt.Println("=============insert=================")
-	if len(values) == 0 {
-		log.Info("insert| values is empty")
-		return 0
-	}
-
-	lastInsertId, err := modelObj.Insert(values)
+//查询一条记录
+func fetchOne(id int) (interface{}, error) {
+	one, err := modelObj.Where("id >= ?", id).One()
 	if err != nil {
-		log.ExitOnError("modelObj.Insert() | err=%v", err)
+		return nil, err
 	}
 
-	fmt.Printf("insert|lastInsertId= %d \n", lastInsertId)
-
-	return lastInsertId
+	return one, nil
 }
 
-//更新
-func update(modelObj *models.Tobj_columns, id int64, values map[string]interface{}) {
-	fmt.Println("=============update=================")
+//更新表记录数据
+func _update() {
+	fmt.Println("==============update====================begin")
 
-	if id == 0 {
-		log.Info("update| id == 0")
+	if flag.NArg() < 2 {
+		fmt.Println("please input the record id")
 		return
 	}
 
-	if len(values) == 0 {
-		log.Info("update| values is empty")
+	id, err := strconv.Atoi(flag.Arg(1))
+	if err != nil {
+		log.ExitOnError("update| strconv.Atoi() | err=%v", err)
+	}
+
+	fmt.Println("update| id =", id)
+
+	if id > 0 {
+		values := map[string]interface{}{
+			"Name":  "update_name",
+			"Phone": "99999999",
+			"Info":  "update_info",
+		}
+
+		rowsAffected, err := modelObj.Where("id=?", id).Update(values)
+		if err != nil {
+			log.ExitOnError("update|modelObj.Update() | err=%v", err)
+		}
+
+		fmt.Printf("update|rowsAffected= %d \n", rowsAffected)
+	}
+
+	fmt.Println("==============update====================end")
+}
+
+//插入测试数据
+func _insert() {
+	fmt.Println("==============insert====================begin")
+
+	if flag.NArg() < 2 {
+		fmt.Println("please input the insert max num")
 		return
 	}
 
-	rowsAffected, err := modelObj.Where("id=?", id).Update(values)
+	maxNum, err := strconv.Atoi(flag.Arg(1))
 	if err != nil {
-		log.ExitOnError("modelObj.Update() | err=%v", err)
+		log.ExitOnError("insert| strconv.Atoi() | err=%v", err)
+	}
+	fmt.Println("insert| maxNum =", maxNum)
+
+	for i := 1; i <= maxNum; i++ {
+		values := map[string]interface{}{
+			"Status": i % 2,
+			"Name":   "name_insert_" + strconv.Itoa(i),
+			"Phone":  "129833444" + strconv.Itoa(i),
+			"Info":   "info_insert" + strconv.Itoa(i),
+		}
+
+		lastInsertId, err := modelObj.Insert(values)
+		if err != nil {
+			log.ExitOnError("insert|modelObj.Insert() | err=%v", err)
+		}
+
+		fmt.Printf("insert|lastInsertId= %d \n", lastInsertId)
 	}
 
-	fmt.Printf("update|rowsAffected= %d \n", rowsAffected)
+	fmt.Println("==============insert====================end")
 }

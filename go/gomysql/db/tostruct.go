@@ -48,6 +48,21 @@ func (t T_{{.tblname}}) String() string{
 	return fmt.Sprintf(strings.Join(formats, ","), args...)
 }
 
+//生成键值对
+func (t T_{{.tblname}}) ToMap() map[string]interface{}{
+	result := make(map[string]interface{})
+
+	{{- range $column := .tableColumns}}
+	{{- if eq $column.KindStr "time.Time" }}
+	result["{{$column.ColumnName|Title}}"] =  t.{{$column.ColumnName|Title}}.Format(C_time_format_layout)
+	{{- else}}
+	result["{{$column.ColumnName|Title}}"] = t.{{$column.ColumnName|Title}}
+	{{- end}}
+	{{- end }}
+	
+	return result
+}
+
 //表操作对象
 type Tobj_{{.tblname}} struct {
 	*Tbase
