@@ -2,6 +2,7 @@ package db
 
 import (
 	"bytes"
+	"fmt"
 	"sort"
 	"strings"
 	"time"
@@ -28,7 +29,7 @@ import (
 //表结构体
 type T_{{.tblname}} struct{
 {{- range $column := .tableColumns}}
-	{{$column.ColumnName|Title}}		{{$column.KindStr}}		//{{$column.ColumnComment}}
+	{{$column.ColumnName|Title}}		{{$column.KindStr}}		{{$column.Tags}}//{{$column.ColumnComment}}
 {{- end }}
 }
 
@@ -182,8 +183,13 @@ func ToStruct(tblname string, tableColumns TableColumnSice) (string, error) {
 	var buf bytes.Buffer
 
 	fields := make([]string, 0, len(tableColumns))
-	for _, column := range tableColumns {
+	for i, column := range tableColumns {
 		fields = append(fields, column.ColumnName)
+		tags := `"-"`
+		if column.ColumnName != conf.C_primary_key {
+			tags = fmt.Sprintf(`"%s,omitempty"`, column.ColumnName)
+		}
+		tableColumns[i].Tags = fmt.Sprintf("`json:%s`", tags)
 	}
 
 	sort.Sort(tableColumns)

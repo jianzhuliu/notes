@@ -13,6 +13,8 @@ type TableColumn struct {
 	ColumnType    string //字段类型
 	DataType      string //字段数据类型
 	ColumnComment string //字段描述
+
+	Tags string //标签信息
 }
 
 type TableColumnSice []TableColumn

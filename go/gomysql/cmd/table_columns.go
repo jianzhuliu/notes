@@ -1,9 +1,10 @@
 /*
-columns 表测试,生成日期 "2020-11-25 16:44:20"
+columns 表测试,生成日期 "2020-11-25 18:29:27"
 */
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -38,6 +39,8 @@ func init() {
 	subCommandFunc["deleteall"] = _deleteall
 	subCommandFunc["all"] = _all
 	subCommandFunc["one"] = _one
+	subCommandFunc["count"] = _count
+	subCommandFunc["transaction"] = _transaction
 }
 
 //帮助说明函数
@@ -52,6 +55,8 @@ func usage() {
 	fmt.Println("deleteall	删除表所有记录")
 	fmt.Println("all		查询所有数据,后面接查询记录数")
 	fmt.Println("one		查询一条记录，后接记录id")
+	fmt.Println("count		统计记录条数")
+	fmt.Println("transaction		事务")
 
 	//输出默认参数
 	flag.PrintDefaults()
@@ -218,6 +223,8 @@ func _one() {
 
 	oneData, _ := modelObj.Interface(one)
 	fmt.Println(oneData)
+	out, err := json.MarshalIndent(oneData, "", " ")
+	fmt.Println(string(out))
 
 	fmt.Println("==============one====================end")
 }
@@ -230,6 +237,105 @@ func fetchOne(id int) (interface{}, error) {
 	}
 
 	return one, nil
+}
+
+//统计记录条数
+func _count() {
+	fmt.Println("==============count====================begin")
+	var num int64
+	var err error
+
+	if flag.NArg() > 1 {
+		id, err := strconv.Atoi(flag.Arg(1))
+		if err != nil {
+			log.ExitOnError("one| strconv.Atoi() | err=%v", err)
+		}
+
+		fmt.Println("count| id =", id)
+		num, err = modelObj.Where("id=?", id).Count()
+	} else {
+		num, err = modelObj.Count()
+	}
+
+	if err != nil {
+		log.ExitOnError("count|modelObj.Count() | err=%v", err)
+	}
+
+	fmt.Printf("count|num= %d \n", num)
+
+	fmt.Println("==============count====================end")
+}
+
+//事务
+func _transaction() {
+	id := 0
+	isCommit := false
+
+	if flag.NArg() > 1 {
+		realId, err := strconv.Atoi(flag.Arg(1))
+		if err != nil {
+			log.ExitOnError("one| strconv.Atoi() | err=%v", err)
+		}
+
+		id = realId
+
+		if flag.NArg() > 2 {
+			isCommit, err = strconv.ParseBool(flag.Arg(2))
+			if err != nil {
+				log.ExitOnError("one| strconv.ParseBool() | err=%v", err)
+			}
+		}
+	}
+
+	fmt.Println("transaction| id =", id)
+
+	one, err := fetchOne(id)
+	if err != nil {
+		log.ExitOnError("one|modelObj.One() | err=%v", err)
+	}
+
+	if one == nil {
+		log.Info("one|empty")
+		return
+	}
+
+	//开启事务
+	err = modelObj.Begin()
+	if err != nil {
+		log.ExitOnError("transaction| modelObj.Begin() | err=%v", err)
+	}
+
+	_, _ = modelObj.Where("id=?", id).Delete()
+
+	if isCommit {
+		//提交事务
+		err = modelObj.Commit()
+
+		if err != nil {
+			log.ExitOnError("transaction| modelObj.Commit() | err=%v", err)
+		}
+
+		//验证
+		if num, err := modelObj.Where("id=?", id).Count(); num > 0 {
+			fmt.Println("transaction commit fail", num, err)
+		} else {
+			fmt.Println("transaction commit success")
+		}
+
+		return
+	}
+	err = modelObj.Rollback()
+
+	if err != nil {
+		log.ExitOnError("transaction| modelObj.Rollback() | err=%v", err)
+	}
+
+	//验证
+	if num, err := modelObj.Cancel().Where("id=?", id).Count(); num != 1 {
+		fmt.Println("transaction rollback fail", num, err)
+	} else {
+		fmt.Println("transaction rollback success")
+	}
 }
 
 //更新表记录数据
@@ -261,6 +367,22 @@ func _update() {
 		}
 
 		fmt.Printf("update|rowsAffected= %d \n", rowsAffected)
+
+		one, err := fetchOne(id)
+		if err != nil {
+			log.ExitOnError("update|modelObj.One() | err=%v", err)
+		}
+
+		if one == nil {
+			log.Info("one|empty")
+			return
+		}
+
+		oneData, _ := modelObj.Interface(one)
+		fmt.Println(oneData)
+		out, err := json.MarshalIndent(oneData, "", " ")
+		fmt.Println(string(out))
+
 	}
 
 	fmt.Println("==============update====================end")

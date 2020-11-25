@@ -7,7 +7,7 @@ import (
 )
 
 func GenTbase() string {
-	return fmt.Sprintf(tmplTbase, time.Now().Format(conf.C_time_layout), conf.C_time_layout)
+	return fmt.Sprintf(tmplTbase, time.Now().Format(conf.C_time_layout), conf.C_time_layout, conf.C_primary_key)
 }
 
 var tmplTbase = `/*
@@ -26,12 +26,19 @@ import (
 
 const (
 	C_time_format_layout = "%[2]s"
-	C_primary_key = "id" 	//主键标识
+	C_primary_key = "%[3]s" 	//主键标识
 )
+
+//db 对象的封装
+type IcommonDB interface{
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+	Exec(query string, args ...interface{}) (sql.Result, error)
+}
 
 //所有表处理对象需实现的接口
 type Isub interface{
-	Db() *sql.DB
+	Db() IcommonDB
 	TableName() string  	//指定表名
 	ColumnList() []string	//字段列表，字符串切片类型
 	Columns() string  		//对应字段列表
@@ -45,6 +52,7 @@ type Isub interface{
 	Delete() (int64, error) 	//删除数据,返回受影响行数及删除的行数
 	Truncate() error		//重置表
 	CreateTableSql() (string, error) 	//查看创建表的 sql 语句
+	Count() (int64, error) //查询记录数
 	
 	Where(string, ...interface{}) Isub 	//链式操作 where 查询条件
 	OrderBy(values ...string) Isub		//链式操作 where 查询条件
@@ -52,6 +60,13 @@ type Isub interface{
 	Build() (string,[]interface{})		//构建sql语句及参数
 	Reset()	Isub						//重置sql语句及参数，以便复用
 	Log(string, ...interface{})			//记录日志
+	
+	//事务
+	Begin() error 		//开启事务
+	Commit() error		//提交事务
+	Rollback() error	//事务回滚
+	Cancel() Isub		//取消事务模式
+	
 }
 
 //基础对象
@@ -62,6 +77,8 @@ type Tbase struct {
 	condArgs []interface{}
 	
 	sub Isub 	//子对象，模板模式，用于子对象可访问 base 对象方法
+	
+	tx *sql.Tx 	//开启事务
 }
 
 //依赖注入 db 对象
@@ -70,7 +87,10 @@ func NewTbase(db *sql.DB) *Tbase{
 }
 
 //获取 db 对象
-func (t *Tbase) Db() *sql.DB {
+func (t *Tbase) Db() IcommonDB {
+	if t.tx != nil {
+		return t.tx
+	}
 	return t.db
 }
 
@@ -259,10 +279,65 @@ func (t *Tbase) Update(values map[string]interface{}) (int64, error){
 	return result.RowsAffected()
 }
 
+//查询记录数
+func (t *Tbase) Count() (int64, error){
+	condStr,args := t.Build()
+	var sql = fmt.Sprintf("select count(1) as c from %%s %%s", t.sub.TableName(), condStr)
+	t.Log("Count|sql:%%s,args:%%v",sql, args)
+	defer t.Reset()
+	row := t.Db().QueryRow(sql, args...)
+	var db_count int64
+	if err := row.Scan(&db_count); err != nil {
+		return 0, err
+	}
+	
+	return db_count, nil
+}
+
 //记录日志
 func (t *Tbase) Log(format string, args ...interface{}) {
 	logger := log.New(os.Stdout, "[log]", log.LstdFlags|log.Lshortfile)
 	logger.Output(2, fmt.Sprintf(format, args...))
+}
+
+/////事务
+//开启事务
+func (t *Tbase) Begin() (err error) {
+	t.Log("transaction begin")
+	
+	if t.tx, err = t.db.Begin(); err != nil {
+		t.Log("db.Begin()|fail|", err)
+	}
+	
+	return 
+}
+
+//提交事务
+func (t *Tbase) Commit() (err error) {
+	t.Log("transaction commit")
+	
+	if err = t.tx.Commit(); err != nil {
+		t.Log("tx.Commit()|fail|", err)
+	}
+	
+	return 
+}
+
+//事务回滚
+func (t *Tbase) Rollback() (err error) {
+	t.Log("transaction rollback")
+	
+	if err = t.tx.Rollback(); err != nil {
+		t.Log("tx.Rollback()|fail|", err)
+	}
+	
+	return 
+}
+
+//取消事务模式
+func (t *Tbase) Cancel() Isub {
+	t.tx = nil
+	return t.sub
 }
 
 //根据值个数，生成需要的参数位置信息

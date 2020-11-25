@@ -1,5 +1,5 @@
 /*
-columns 表结构生成时间 "2020-11-25 16:44:20"
+columns 表结构生成时间 "2020-11-25 18:29:27"
 请勿修改，如需新增方法，请另外同包同目录下创建文件处理
 */
 package models
@@ -13,13 +13,13 @@ import (
 
 //表结构体
 type T_columns struct {
-	Status  int8      //状态 1:enable, 0:disable, -1:deleted
-	Id      uint      //
-	Gender  string    //员工性别
-	Info    string    //描述信息
-	Name    string    //用户名
-	Phone   string    //手机号
-	Created time.Time //创建时间
+	Status  int8      `json:"status,omitempty"`  //状态 1:enable, 0:disable, -1:deleted
+	Id      uint      `json:"-"`                 //
+	Gender  string    `json:"gender,omitempty"`  //员工性别
+	Info    string    `json:"info,omitempty"`    //描述信息
+	Name    string    `json:"name,omitempty"`    //用户名
+	Phone   string    `json:"phone,omitempty"`   //手机号
+	Created time.Time `json:"created,omitempty"` //创建时间
 }
 
 //打印结构体数据
