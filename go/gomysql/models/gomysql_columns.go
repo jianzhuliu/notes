@@ -1,5 +1,5 @@
 /*
-columns 表结构生成时间 "2020-11-25 18:29:27"
+columns 表结构生成时间 "2020-11-27 15:39:56"
 请勿修改，如需新增方法，请另外同包同目录下创建文件处理
 */
 package models
@@ -10,6 +10,13 @@ import (
 	"strings"
 	"time"
 )
+
+//注册表对应创建操作对象的方法
+func init() {
+	TableToObjCreateFunc["columns"] = func(db *sql.DB) Isub {
+		return NewTobj_columns(db)
+	}
+}
 
 //表结构体
 type T_columns struct {

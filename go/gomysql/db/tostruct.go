@@ -26,6 +26,13 @@ import (
 	"fmt"
 )
 
+//注册表对应创建操作对象的方法
+func init(){
+	TableToObjCreateFunc["{{.tblname}}"] = func (db *sql.DB) Isub{
+		return NewTobj_{{.tblname}}(db)
+	}
+}
+
 //表结构体
 type T_{{.tblname}} struct{
 {{- range $column := .tableColumns}}

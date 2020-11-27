@@ -68,3 +68,10 @@ go run main.go command -name demo -desc="demo description"
 go run main.go tostruct -table=columns -out
 go run main.go tostruct -all -out
 ```
+
+> - web 形式查看 
+
+```bash 
+go run main.go web -web_host=localhost -web_port=8080
+```
+

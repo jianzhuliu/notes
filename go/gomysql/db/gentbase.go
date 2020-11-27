@@ -29,6 +29,9 @@ const (
 	C_primary_key = "%[3]s" 	//主键标识
 )
 
+//各个表对应创建表操作对象的方法
+var TableToObjCreateFunc = make(map[string]func (*sql.DB) Isub)
+
 //db 对象的封装
 type IcommonDB interface{
 	Query(query string, args ...interface{}) (*sql.Rows, error)

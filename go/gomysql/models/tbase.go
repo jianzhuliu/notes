@@ -1,5 +1,5 @@
 /*
-公用部分,生成日期 "2020-11-25 18:29:28"
+公用部分,生成日期 "2020-11-27 15:39:57"
 */
 package models
 
@@ -16,6 +16,9 @@ const (
 	C_time_format_layout = "2006-01-02 15:04:05"
 	C_primary_key        = "id" //主键标识
 )
+
+//各个表对应创建表操作对象的方法
+var TableToObjCreateFunc = make(map[string]func(*sql.DB) Isub)
 
 //db 对象的封装
 type IcommonDB interface {

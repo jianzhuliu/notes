@@ -43,6 +43,10 @@ func HandleWeb(addr string) {
 	//添加路由
 	registerRoute("version", "查看数据库版本", handleVersion)
 	registerRoute("databases", "查看所有数据库列表", handleDatabases)
+	registerRoute("tables", "查看所有表", handleTables)
+	registerRoute("createsql", "查看表创建sql,带get参数 tblname", handleTableCreateSql)
+	registerRoute("count", "查看表总记录数,带get参数 tblname", handleTableCount)
+	registerRoute("all", "列出表数据,带get参数 tblname,perpage,pagenum", handleTableAll)
 
 	//自动开启
 	go utils.OpenBrowser(addr)
@@ -55,8 +59,9 @@ func HandleWeb(addr string) {
 
 //注册路由
 func registerRoute(name, desc string, handler func(http.ResponseWriter, *http.Request)) {
-	apiList[name] = desc
-	http.HandleFunc("/"+name, handler)
+	pattern := "/" + name
+	apiList[pattern] = desc
+	http.HandleFunc(pattern, handler)
 }
 
 //统一响应方法，状态码，错误信息，数据
@@ -86,4 +91,9 @@ func fail(wr http.ResponseWriter, code ReturnCode, err_msg string) {
 //成功时调用
 func succ(wr http.ResponseWriter, data interface{}) {
 	response(wr, CodeSucc, "", data)
+}
+
+//获取参数值
+func param(r *http.Request, name string) string {
+	return r.URL.Query().Get(name)
 }
