@@ -12,7 +12,7 @@ create table `columns` (
 	`phone` char(11) NOT NULL DEFAULT '' COMMENT '手机号',
 	`gender` enum('male','female','unknow') NOT NULL DEFAULT 'unknow' COMMENT '员工性别',
 	`status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态 1:enable, 0:disable, -1:deleted',
-	`info` text NOT NULL DEFAULT '' COMMENT '描述信息',
+	`info` text NOT NULL COMMENT '描述信息',
 	`created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 	
 	primary key (`id`)

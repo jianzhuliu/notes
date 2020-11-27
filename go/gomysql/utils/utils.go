@@ -1,10 +1,14 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
+	"time"
 )
 
 //获取当前命令执行目录
@@ -45,4 +49,26 @@ func ExitOnError(format string, args ...interface{}) {
 func DoLog(format string, args ...interface{}) {
 	logger := log.New(os.Stdout, "[do_log]", log.LstdFlags|log.Lshortfile)
 	logger.Output(2, fmt.Sprintf(format, args...))
+}
+
+//浏览器打开url
+func OpenBrowser(addr string) {
+	//构造 url
+	targetUrl := fmt.Sprintf("http://%s", addr)
+
+	//不同平台区分 执行命令
+	var cmdName string
+	var args []string
+	switch runtime.GOOS {
+	case "windows":
+		cmdName = "cmd"
+		args = []string{"/c", "start", targetUrl}
+	default:
+		return
+	}
+
+	//构造超时命令
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	_ = exec.CommandContext(ctx, cmdName, args...).Run()
 }
