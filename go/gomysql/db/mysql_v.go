@@ -7,8 +7,8 @@ package db
 //根据前4个字符，来绝对匹配
 var TypeMysqlToKind = map[string]string{
 	//日期类型， date,datetime,time,timestamp,year
-	"date": "time.Time",
-	"time": "time.Time",
+	"date": "TimeNormal",
+	"time": "TimeNormal",
 	"year": "int16",
 
 	//小数, float, double, decimal

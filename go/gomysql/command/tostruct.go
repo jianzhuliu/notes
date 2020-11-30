@@ -614,6 +614,9 @@ func _update(){
 		oneData,_ := modelObj.Interface(one)
 		fmt.Println(oneData)
 		out, err := json.MarshalIndent(oneData, "", " ")
+		if err != nil {
+			log.Error("json.MarshalIndent() | err =%v", err)
+		}
 		fmt.Println(string(out))
 	
 	}
@@ -642,6 +645,7 @@ func _insert(){
 			"Name":"name_insert_" +  strconv.Itoa(i),
 			"Phone": "129833444" + strconv.Itoa(i),
 			"Info":"info_insert" +  strconv.Itoa(i),
+			"Created": models.TimeNormal{time.Now()},
 		}
 		
 		lastInsertId, err := modelObj.Insert(values)

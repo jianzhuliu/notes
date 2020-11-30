@@ -21,7 +21,9 @@ import (
 	"log"
 	"os"
 	"fmt"
+	"time"
 	"database/sql"
+	"database/sql/driver"
 )
 
 const (
@@ -70,6 +72,39 @@ type Isub interface{
 	Rollback() error	//事务回滚
 	Cancel() Isub		//取消事务模式
 	
+}
+
+//time.Time 特殊处理
+type TimeNormal struct{
+	time.Time
+}
+
+//转换为数据库中存储值
+//实现 driver.Valuer 接口
+func (t TimeNormal) Value() (driver.Value, error){
+	if t.IsZero() { return nil,nil }
+	return t.Time, nil 
+}
+
+//扫描数据库字段
+//实现 sql.Scanner 接口
+func (t *TimeNormal) Scan(src interface{}) error{
+	if value, ok := src.(time.Time); ok {
+		*t = TimeNormal{Time:value}
+		return nil
+	}
+	
+	return fmt.Errorf("cann't convert %v to time.Time", src)
+}
+
+//json 格式化
+//实现 json.Marshaler 接口
+func (t TimeNormal) MarshalJSON() ([]byte, error){
+	b := make([]byte, 0, len(C_time_format_layout)+2)
+	b = append(b, '"')
+	b = t.AppendFormat(b, C_time_format_layout)
+	b = append(b, '"')
+	return b, nil
 }
 
 //基础对象

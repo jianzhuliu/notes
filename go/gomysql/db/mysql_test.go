@@ -77,7 +77,7 @@ var mysqlTypeTests = []mysqlTypeTest{
 	{TableColumn{ColumnName: "name7", ColumnType: "varchar(20)", DataType: "varchar"}, "string", true},
 	{TableColumn{ColumnName: "name8", ColumnType: "char(10)", DataType: "char"}, "string", true},
 
-	{TableColumn{ColumnName: "name9", ColumnType: "timestamp", DataType: "timestamp"}, "time.Time", true},
+	{TableColumn{ColumnName: "name9", ColumnType: "timestamp", DataType: "timestamp"}, "TimeNormal", true},
 
 	{TableColumn{ColumnName: "name10", ColumnType: "float", DataType: "float"}, "float32", true},
 	{TableColumn{ColumnName: "name11", ColumnType: "float(10,2)", DataType: "float"}, "float32", true},

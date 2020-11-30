@@ -1,5 +1,5 @@
 /*
-columns 表测试,生成日期 "2020-11-27 15:39:56"
+columns 表测试,生成日期 "2020-11-30 12:34:33"
 */
 package main
 
@@ -381,6 +381,9 @@ func _update() {
 		oneData, _ := modelObj.Interface(one)
 		fmt.Println(oneData)
 		out, err := json.MarshalIndent(oneData, "", " ")
+		if err != nil {
+			log.Error("json.MarshalIndent() | err =2020-11-30 12:34:33", err)
+		}
 		fmt.Println(string(out))
 
 	}
@@ -405,10 +408,11 @@ func _insert() {
 
 	for i := 1; i <= maxNum; i++ {
 		values := map[string]interface{}{
-			"Status": i % 2,
-			"Name":   "name_insert_" + strconv.Itoa(i),
-			"Phone":  "129833444" + strconv.Itoa(i),
-			"Info":   "info_insert" + strconv.Itoa(i),
+			"Status":  i % 2,
+			"Name":    "name_insert_" + strconv.Itoa(i),
+			"Phone":   "129833444" + strconv.Itoa(i),
+			"Info":    "info_insert" + strconv.Itoa(i),
+			"Created": models.TimeNormal{time.Now()},
 		}
 
 		lastInsertId, err := modelObj.Insert(values)
