@@ -1,5 +1,5 @@
 /*
-公用部分,生成日期 "2020-11-30 12:34:34"
+公用部分,生成日期 "2020-12-01 16:51:57"
 */
 package models
 
@@ -60,6 +60,9 @@ type Isub interface {
 	Rollback() error //事务回滚
 	Cancel() Isub    //取消事务模式
 
+	//生成测试数据
+	GenTestForUpdate() map[string]interface{}
+	GenTestForInsert(int) []map[string]interface{}
 }
 
 //time.Time 特殊处理
@@ -410,4 +413,13 @@ func getFuncNameAndFileLine(args ...int) (string, string, int) {
 	file = short
 
 	return funcName, file, line
+}
+
+//生成测试数据
+func (t *Tbase) GenTestForUpdate() map[string]interface{} {
+	return nil
+}
+
+func (t *Tbase) GenTestForInsert(int) []map[string]interface{} {
+	return nil
 }

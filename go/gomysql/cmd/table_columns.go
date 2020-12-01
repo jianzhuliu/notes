@@ -1,5 +1,5 @@
 /*
-columns 表测试,生成日期 "2020-11-30 12:34:33"
+columns 表测试,生成日期 "2020-12-01 16:51:57"
 */
 package main
 
@@ -355,10 +355,10 @@ func _update() {
 	fmt.Println("update| id =", id)
 
 	if id > 0 {
-		values := map[string]interface{}{
-			"Name":  "update_name",
-			"Phone": "99999999",
-			"Info":  "update_info",
+		values := modelObj.GenTestForUpdate()
+
+		if values == nil || len(values) == 0 {
+			log.ExitOnError("please implement method %q, so we can get test update data ", "func (t *Tobj_columns) GenTestForUpdate() map[string]interface{}")
 		}
 
 		rowsAffected, err := modelObj.Where("id=?", id).Update(values)
@@ -382,7 +382,7 @@ func _update() {
 		fmt.Println(oneData)
 		out, err := json.MarshalIndent(oneData, "", " ")
 		if err != nil {
-			log.Error("json.MarshalIndent() | err =2020-11-30 12:34:33", err)
+			log.Error("json.MarshalIndent() | err =2020-12-01 16:51:57", err)
 		}
 		fmt.Println(string(out))
 
@@ -395,26 +395,24 @@ func _update() {
 func _insert() {
 	fmt.Println("==============insert====================begin")
 
-	if flag.NArg() < 2 {
-		fmt.Println("please input the insert max num")
-		return
+	var err error
+	maxNum := 5
+
+	if flag.NArg() > 2 {
+		maxNum, err = strconv.Atoi(flag.Arg(1))
+		if err != nil {
+			log.ExitOnError("insert| strconv.Atoi() | err=%v", err)
+		}
 	}
 
-	maxNum, err := strconv.Atoi(flag.Arg(1))
-	if err != nil {
-		log.ExitOnError("insert| strconv.Atoi() | err=%v", err)
-	}
 	fmt.Println("insert| maxNum =", maxNum)
 
-	for i := 1; i <= maxNum; i++ {
-		values := map[string]interface{}{
-			"Status":  i % 2,
-			"Name":    "name_insert_" + strconv.Itoa(i),
-			"Phone":   "129833444" + strconv.Itoa(i),
-			"Info":    "info_insert" + strconv.Itoa(i),
-			"Created": models.TimeNormal{time.Now()},
-		}
+	testData := modelObj.GenTestForInsert(maxNum)
+	if testData == nil || len(testData) == 0 {
+		log.ExitOnError("please implement method %q, so we can get test insert data ", "func (t *Tobj_columns) GenTestForInsert(num int) []map[string]interface{}")
+	}
 
+	for _, values := range testData {
 		lastInsertId, err := modelObj.Insert(values)
 		if err != nil {
 			log.ExitOnError("insert|modelObj.Insert() | err=%v", err)

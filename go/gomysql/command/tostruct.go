@@ -4,6 +4,7 @@ package command
 import (
 	"context"
 	"fmt"
+	"go/format"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -195,12 +196,18 @@ func genModelFile(database, tblname, str string) error {
 
 	modelsFileName := fmt.Sprintf("%s_%s.go", database, tblname)
 	modelsFile := filepath.Join(modelsPath, modelsFileName)
-	err = ioutil.WriteFile(modelsFile, []byte(str), os.ModePerm)
+
+	content, err := format.Source([]byte(str))
 	if err != nil {
 		return err
 	}
 
-	gofmt(modelsFile)
+	err = ioutil.WriteFile(modelsFile, content, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	//gofmt(modelsFile)
 
 	return nil
 }
@@ -214,13 +221,18 @@ func genTbaseFile() error {
 
 	file := filepath.Join(cmdPath, "tbase.go")
 
-	content := db.GenTbase()
-	err = ioutil.WriteFile(file, []byte(content), os.ModePerm)
+	str := db.GenTbase()
+	content, err := format.Source([]byte(str))
 	if err != nil {
 		return err
 	}
 
-	gofmt(file)
+	err = ioutil.WriteFile(file, content, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	//gofmt(file)
 
 	return nil
 }
@@ -588,10 +600,10 @@ func _update(){
 	fmt.Println("update| id =", id)
 	
 	if id > 0 {
-		values := map[string]interface{}{
-			"Name":"update_name" ,
-			"Phone": "99999999",
-			"Info":"update_info",
+		values := modelObj.GenTestForUpdate()
+		
+		if values == nil || len(values) == 0 {
+			log.ExitOnError("please implement method %%q, so we can get test update data ", "func (t *Tobj_%[1]s) GenTestForUpdate() map[string]interface{}")
 		}
 		
 		rowsAffected, err := modelObj.Where("id=?", id).Update(values)
@@ -628,26 +640,24 @@ func _update(){
 func _insert(){
 	fmt.Println("==============insert====================begin")
 	
-	if flag.NArg() < 2 {
-		fmt.Println("please input the insert max num")
-		return
+	var err error
+	maxNum := 5
+	
+	if flag.NArg() > 2 {
+		maxNum, err = strconv.Atoi(flag.Arg(1))
+		if err != nil {
+			log.ExitOnError("insert| strconv.Atoi() | err=%%v", err)
+		}
 	}
 
-	maxNum, err := strconv.Atoi(flag.Arg(1))
-	if err != nil {
-		log.ExitOnError("insert| strconv.Atoi() | err=%%v", err)
-	}
 	fmt.Println("insert| maxNum =", maxNum)
 	
-	for i:=1; i<=maxNum; i++ {
-		values := map[string]interface{}{
-			"Status":i%%2,
-			"Name":"name_insert_" +  strconv.Itoa(i),
-			"Phone": "129833444" + strconv.Itoa(i),
-			"Info":"info_insert" +  strconv.Itoa(i),
-			"Created": models.TimeNormal{time.Now()},
-		}
-		
+	testData := modelObj.GenTestForInsert(maxNum)
+	if testData == nil || len(testData) == 0 {
+		log.ExitOnError("please implement method %%q, so we can get test insert data ", "func (t *Tobj_%[1]s) GenTestForInsert(num int) []map[string]interface{}")
+	}
+	
+	for _, values := range testData {
 		lastInsertId, err := modelObj.Insert(values)
 		if err != nil {
 			log.ExitOnError("insert|modelObj.Insert() | err=%%v", err)
@@ -672,13 +682,17 @@ func genCmdFile(tblname string) error {
 	cmdFile := filepath.Join(cmdPath, cmdFileName)
 
 	created := time.Now().Format(conf.C_time_layout)
-	content := fmt.Sprintf(tmplCmdModel, tblname, created)
-	err = ioutil.WriteFile(cmdFile, []byte(content), os.ModePerm)
+	str := fmt.Sprintf(tmplCmdModel, tblname, created)
+	content, err := format.Source([]byte(str))
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(cmdFile, content, os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	gofmt(cmdFile)
+	//gofmt(cmdFile)
 
 	return nil
 
