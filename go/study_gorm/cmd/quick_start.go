@@ -4,14 +4,12 @@ import (
 	"flag"
 	"fmt"
 
+	"study_gorm/config"
+
 	"gitee.com/jianzhuliu/common/conf"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
-
-//需要首先创建数据库
-//create database gorm default character set utf8mb4 collate utf8mb4_0900_ai_ci;
-var database string = "gorm"
 
 func init() {
 	//初始化 db 命令行参数
@@ -29,7 +27,7 @@ func main() {
 	flag.Parse()
 
 	//指定数据库名
-	conf.V_db_dbname = database
+	conf.V_db_dbname = config.C_database
 
 	dsn := conf.FlagDbDsn()
 	fmt.Println(dsn)

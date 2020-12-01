@@ -25,5 +25,5 @@ var (
 )
 
 //默认mysql dsn
-var V_default_mysql_dsn string = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local&charset=utf8",
+var V_default_mysql_dsn string = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local&charset=utf8mb4",
 	C_db_user, C_db_passwd, C_db_host, C_db_port, C_db_database)
