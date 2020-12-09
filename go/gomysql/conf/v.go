@@ -27,3 +27,10 @@ var (
 //默认mysql dsn
 var V_default_mysql_dsn string = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local&charset=utf8mb4",
 	C_db_user, C_db_passwd, C_db_host, C_db_port, C_db_database)
+
+
+//部分公用变量
+var (
+	V_file string //文件名
+	V_x bool 		//是否执行
+)

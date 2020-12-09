@@ -79,7 +79,7 @@ type Tobj_{{.tblname}} struct {
 //创建实例
 func NewTobj_{{.tblname}}(db *sql.DB) *Tobj_{{.tblname}} {
 	tbase := NewTbase(db)
-	t := &Tobj_columns{
+	t := &Tobj_{{.tblname}}{
 		Tbase: tbase,
 	}
 	
@@ -166,7 +166,7 @@ func (t *Tobj_{{.tblname}}) All() ([]interface{},error) {
 			return nil, err
 		}
 		
-		result := T_columns{}
+		result := T_{{.tblname}}{}
 		{{- range $column := .tableColumns}}
 		result.{{$column.ColumnName|Title}} = {{$column.ColumnName}}
 		{{- end }}

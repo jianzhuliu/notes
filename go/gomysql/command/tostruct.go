@@ -100,7 +100,7 @@ func RunTostruct() error {
 				return err
 			}
 
-			err = genCmdFile(conf.V_db_table)
+			err = genCmdFile(conf.V_db_database, conf.V_db_table)
 			if err != nil {
 				return err
 			}
@@ -154,7 +154,7 @@ func RunTostruct() error {
 					return err
 				}
 
-				err = genCmdFile(tblname)
+				err = genCmdFile(conf.V_db_database, tblname)
 				if err != nil {
 					return err
 				}
@@ -672,13 +672,13 @@ func _insert(){
 `
 
 //生成 cmd file
-func genCmdFile(tblname string) error {
+func genCmdFile(database, tblname string) error {
 	cmdPath, err := utils.GenFolder("cmd")
 	if err != nil {
 		return err
 	}
 
-	cmdFileName := fmt.Sprintf("table_%s.go", tblname)
+	cmdFileName := fmt.Sprintf("table_%s_%s.go", database, tblname)
 	cmdFile := filepath.Join(cmdPath, cmdFileName)
 
 	created := time.Now().Format(conf.C_time_layout)

@@ -1,5 +1,5 @@
 /*
-columns 表测试,生成日期 "2020-12-01 16:51:57"
+segments 表测试,生成日期 "2020-12-09 17:06:37"
 */
 package main
 
@@ -16,7 +16,7 @@ import (
 	"gomysql/models"
 )
 
-var modelObj *models.Tobj_columns
+var modelObj *models.Tobj_segments
 var subCommandFunc map[string]func()
 
 func init() {
@@ -26,7 +26,7 @@ func init() {
 		log.ExitOnError("db.GetMysqlDb() | err=%v", err)
 	}
 
-	modelObj = models.NewTobj_columns(db)
+	modelObj = models.NewTobj_segments(db)
 	flag.Usage = usage
 
 	//定义各个子命令，对应处理函数
@@ -46,7 +46,7 @@ func init() {
 //帮助说明函数
 func usage() {
 	fmt.Println("*************************************")
-	fmt.Println("Usage of table_columns:")
+	fmt.Println("Usage of table_segments:")
 	fmt.Println("info		展示表基本信息")
 	fmt.Println("truncate	重置表")
 	fmt.Println("insert		插入测试数据,后面接插入记录数")
@@ -358,7 +358,7 @@ func _update() {
 		values := modelObj.GenTestForUpdate()
 
 		if values == nil || len(values) == 0 {
-			log.ExitOnError("please implement method %q, so we can get test update data ", "func (t *Tobj_columns) GenTestForUpdate() map[string]interface{}")
+			log.ExitOnError("please implement method %q, so we can get test update data ", "func (t *Tobj_segments) GenTestForUpdate() map[string]interface{}")
 		}
 
 		rowsAffected, err := modelObj.Where("id=?", id).Update(values)
@@ -382,7 +382,7 @@ func _update() {
 		fmt.Println(oneData)
 		out, err := json.MarshalIndent(oneData, "", " ")
 		if err != nil {
-			log.Error("json.MarshalIndent() | err =2020-12-01 16:51:57", err)
+			log.Error("json.MarshalIndent() | err =2020-12-09 17:06:37", err)
 		}
 		fmt.Println(string(out))
 
@@ -409,7 +409,7 @@ func _insert() {
 
 	testData := modelObj.GenTestForInsert(maxNum)
 	if testData == nil || len(testData) == 0 {
-		log.ExitOnError("please implement method %q, so we can get test insert data ", "func (t *Tobj_columns) GenTestForInsert(num int) []map[string]interface{}")
+		log.ExitOnError("please implement method %q, so we can get test insert data ", "func (t *Tobj_segments) GenTestForInsert(num int) []map[string]interface{}")
 	}
 
 	for _, values := range testData {
