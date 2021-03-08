@@ -16,8 +16,8 @@ type Account struct {
 
 var (
 	ErrNameLengh error = fmt.Errorf("name length is not right, should between 4 and 10")
-	ErrAge error = fmt.Errorf("age is over 65")
-	ErrGender error = fmt.Errorf("gender is not right")
+	ErrAge       error = fmt.Errorf("age is over 65")
+	ErrGender    error = fmt.Errorf("gender is not right")
 )
 
 func (a *Account) CheckName() *Account {

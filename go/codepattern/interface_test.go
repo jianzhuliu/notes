@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestInterface(t *testing.T){
+func TestInterface(t *testing.T) {
 	r := Rect{Width: 3.0, Height: 4.0}
 	c := Circle{Radius: 2.0}
 
