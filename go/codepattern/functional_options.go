@@ -1,5 +1,5 @@
 /*
-错误处理
+函数编程
 */
 
 package codepattern

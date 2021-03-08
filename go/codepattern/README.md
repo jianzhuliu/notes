@@ -3,21 +3,10 @@
 
 > - 接口编程
 
-[interface](/interface.go ':include :type=code :fragment=interface')
-
-[interface_cmd](/cmd/interface.go ':include :type=code :fragment=interface_cmd')
-
 > - 错误处理，参考 bufio.Scanner
-
-[error](/error.go ':include :type=code :fragment=error')
-
-[error_cmd](/cmd/error.go ':include :type=code :fragment=error_cmd')
 
 > - 函数编程
 
-[functional_options](/functional_options.go ':include :type=code :fragment=functional_options')
-
-[functional_options_cmd](/cmd/functional_options.go ':include :type=code :fragment=functional_options_cmd')
 
 # 性能提示
 
