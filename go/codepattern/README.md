@@ -1,12 +1,17 @@
 
 # go语言编码模式
 
-> - 接口编程
+> - 接口编程 interface.go
 
-> - 错误处理，参考 bufio.Scanner
+> - 错误处理，参考 bufio.Scanner, error.go
 
-> - 函数编程
+> - 函数编程 functinal_options.go
 
+> - 装饰器模式 decorator.go
+
+> - 管道模式 pipeline.go
+
+> - 访问者模式 visitor.go
 
 # 性能提示
 
