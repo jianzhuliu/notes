@@ -1,0 +1,39 @@
+//设置版本，默认是 proto2
+syntax = "proto3";
+
+option go_package="/pb";
+
+//包名
+package pb;
+
+
+//枚举类型, 枚举值必须从 0 开始
+enum Gender {
+	Man = 0;
+	Woman = 1;
+}
+
+//消息体
+message Student {
+	int32 id = 1;   //后面数字不可以重复
+	string name = 2;
+	Gender gender = 3;
+	repeated int32 scores = 4; //数组->切片
+	Company compay = 5; //嵌套
+	
+	//联合体
+	oneof data {
+		string teacher = 6;
+		string class = 7;
+	}
+}
+
+//消息体
+message Company {
+	string Name = 1;
+}
+
+//添加rpc定义
+service hello{
+	rpc Say(Student) returns (Student){}
+}
